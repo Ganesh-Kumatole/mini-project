@@ -12,6 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
+mini-project.code-workspace
 
 # Editor directories and files
 .vscode/*

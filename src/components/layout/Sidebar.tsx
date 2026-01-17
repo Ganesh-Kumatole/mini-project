@@ -1,22 +1,21 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom';
 
 interface SidebarProps {
-  isOpen: boolean
-  toggleSidebar: (open: boolean) => void
+  isOpen: boolean;
+  toggleSidebar: (open: boolean) => void;
 }
 
 export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
-  const location = useLocation()
-  const isActive = (path: string) => location.pathname === path
+  const location = useLocation();
+  const isActive = (path: string) => location.pathname === path;
 
   const menuItems = [
     { icon: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-    { icon: 'account_balance', label: 'Accounts', path: '/accounts' },
     { icon: 'receipt_long', label: 'Transactions', path: '/transactions' },
     { icon: 'savings', label: 'Budgets', path: '/budgets' },
     { icon: 'lightbulb', label: 'Insights', path: '/insights' },
     { icon: 'settings', label: 'Settings', path: '/settings' },
-  ]
+  ];
 
   return (
     <aside
@@ -26,7 +25,9 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     >
       <div className="h-16 flex items-center px-6 border-b border-border-light dark:border-border-dark">
         <div className="flex items-center gap-2 text-primary font-bold text-xl">
-          <span className="material-icons-round text-3xl">account_balance_wallet</span>
+          <span className="material-icons-round text-3xl">
+            account_balance_wallet
+          </span>
           <span>Fintracker</span>
         </div>
       </div>
@@ -54,10 +55,12 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
           to="/"
           className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-danger hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
         >
-          <span className="material-icons-round text-xl rotate-180">logout</span>
+          <span className="material-icons-round text-xl rotate-180">
+            logout
+          </span>
           Logout
         </Link>
       </div>
     </aside>
-  )
-}
+  );
+};

@@ -1,16 +1,15 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
-import { ThemeProvider } from './context/ThemeContext'
-import { LandingPage } from './components/auth'
-import { LoginPage } from './components/auth'
-import { SignupPage } from './components/auth'
-import { Dashboard } from './components/dashboard'
-import { Transactions } from './components/transactions'
-import { Accounts } from './components/accounts'
-import { Budgets } from './components/budgets'
-import { Insights } from './components/insights'
-import { Settings } from './components/settings'
-import { ProtectedRoute } from './components/layout'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { LandingPage } from './components/auth';
+import { LoginPage } from './components/auth';
+import { SignupPage } from './components/auth';
+import { Dashboard } from './components/dashboard';
+import { Transactions } from './components/transactions';
+import { Budgets } from './components/budgets';
+import { Insights } from './components/insights';
+import { Settings } from './components/settings';
+import { ProtectedRoute } from './components/layout';
 
 function App() {
   return (
@@ -34,14 +33,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Transactions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/accounts"
-              element={
-                <ProtectedRoute>
-                  <Accounts />
                 </ProtectedRoute>
               }
             />
@@ -73,7 +64,7 @@ function App() {
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;
