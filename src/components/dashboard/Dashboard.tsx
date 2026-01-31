@@ -1,8 +1,10 @@
-import { useDashboard } from '@/hooks';
+import { useDashboard, useTransactions } from '@/hooks';
 import { formatCurrency } from '@/utils/formatters';
+import { LineChart, DonutChart } from './Charts';
 
 export const Dashboard = () => {
   const { totals, monthly, loading } = useDashboard();
+  const { transactions } = useTransactions();
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -134,59 +136,68 @@ export const Dashboard = () => {
       </div>
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Expense Breakdown */}
+        {/* Expense Breakdown (Donut) */}
         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-border-light dark:border-border-dark">
           <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-6">
-            Expense Breakdown
+            Expense Breakdown (Last 30 days)
           </h3>
-          <div className="relative h-64 w-full flex flex-col gap-2">
+          <div className="relative h-64 w-full">
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
                 Loading...
               </div>
             ) : (
-              monthly.map((m) => (
-                <div
-                  key={m.month}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <div>{m.month}</div>
-                  <div className="font-semibold">
-                    {formatCurrency(m.expense)}
-                  </div>
-                </div>
-              ))
+              (() => {
+                const recentSince = new Date();
+                recentSince.setDate(recentSince.getDate() - 30);
+                const recent = transactions.filter(
+                  (t) =>
+                    new Date(t.date) >= recentSince && t.type === 'expense',
+                );
+                const grouped = recent.reduce<Record<string, number>>(
+                  (acc, t) => {
+                    acc[t.category] = (acc[t.category] || 0) + t.amount;
+                    return acc;
+                  },
+                  {},
+                );
+                const labels = Object.keys(grouped).slice(0, 8);
+                const data = labels.map((l) => grouped[l] || 0);
+                if (labels.length === 0)
+                  return (
+                    <div className="flex items-center justify-center">
+                      No recent expenses
+                    </div>
+                  );
+                return <DonutChart labels={labels} data={data} />;
+              })()
             )}
           </div>
         </div>
 
-        {/* Income vs Expense Trend */}
+        {/* Income vs Expense Trend (Line) */}
         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-border-light dark:border-border-dark">
           <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-6">
             Income vs. Expense Trend
           </h3>
-          <div className="relative h-64 w-full flex flex-col gap-2">
+          <div className="relative h-64 w-full">
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
                 Loading...
               </div>
             ) : (
-              monthly.map((m) => (
-                <div
-                  key={m.month}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <div>{m.month}</div>
-                  <div className="flex gap-4">
-                    <div className="font-semibold text-green-600">
-                      {formatCurrency(m.income)}
-                    </div>
-                    <div className="font-semibold text-red-600">
-                      {formatCurrency(m.expense)}
-                    </div>
-                  </div>
-                </div>
-              ))
+              (() => {
+                const labels = monthly.map((m) => m.month);
+                const income = monthly.map((m) => m.income);
+                const expense = monthly.map((m) => m.expense);
+                return (
+                  <LineChart
+                    labels={labels}
+                    income={income}
+                    expense={expense}
+                  />
+                );
+              })()
             )}
           </div>
         </div>

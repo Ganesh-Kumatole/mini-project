@@ -1,18 +1,41 @@
 import { useState } from 'react';
 import { useTransactions } from '@/hooks';
 import { formatDate, formatCurrency } from '@/utils/formatters';
+import { Transaction } from '@/types';
 import AddTransactionModal from './AddTransactionModal';
+import EditTransactionModal from './EditTransactionModal';
 
 export const Transactions = () => {
-  const { transactions, loading, error, createTransaction, deleteTransaction } =
-    useTransactions();
+  const {
+    transactions,
+    loading,
+    error,
+    createTransaction,
+    updateTransaction,
+    deleteTransaction,
+  } = useTransactions();
 
   const [showAdd, setShowAdd] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   const handleAdd = () => setShowAdd(true);
   const handleClose = () => setShowAdd(false);
   const handleCreate = async (input: any) => {
     await createTransaction(input);
+  };
+
+  const handleEditClick = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setShowEdit(true);
+  };
+  const handleEditClose = () => {
+    setShowEdit(false);
+    setEditingTransaction(null);
+  };
+  const handleEditSave = async (input: any) => {
+    await updateTransaction(input);
   };
 
   const handleDelete = async (id: string) => {
@@ -159,9 +182,7 @@ export const Transactions = () => {
                       <div className="flex items-center justify-center gap-3">
                         <button
                           className="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
-                          onClick={() => {
-                            /* edit flow not implemented yet */
-                          }}
+                          onClick={() => handleEditClick(tx)}
                         >
                           <span className="material-icons-outlined text-lg">
                             edit
@@ -189,6 +210,14 @@ export const Transactions = () => {
           isOpen={showAdd}
           onClose={handleClose}
           onCreate={handleCreate}
+        />
+      )}
+      {showEdit && (
+        <EditTransactionModal
+          isOpen={showEdit}
+          onClose={handleEditClose}
+          transaction={editingTransaction}
+          onSave={handleEditSave}
         />
       )}
     </div>

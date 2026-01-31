@@ -1,24 +1,39 @@
-import { useState } from 'react';
-import { CreateTransactionInput } from '@/types';
+import { useEffect, useState } from 'react';
+import { Transaction, UpdateTransactionInput } from '@/types';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (input: CreateTransactionInput) => Promise<string | void>;
+  transaction: Transaction | null;
+  onSave: (input: UpdateTransactionInput) => Promise<void>;
 };
 
-export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
+export const EditTransactionModal = ({
+  isOpen,
+  onClose,
+  transaction,
+  onSave,
+}: Props) => {
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [date, setDate] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [recurring, setRecurring] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (transaction && isOpen) {
+      setAmount(transaction.amount.toString());
+      setCategory(transaction.category);
+      setDate(new Date(transaction.date).toISOString().slice(0, 10));
+      setDescription(transaction.description);
+      setType(transaction.type);
+      setRecurring(false);
+    }
+  }, [transaction, isOpen]);
+
+  if (!isOpen || !transaction) return null;
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -29,7 +44,8 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
     }
     setSubmitting(true);
     try {
-      await onCreate({
+      await onSave({
+        id: transaction.id,
         amount: amt,
         description,
         category,
@@ -39,7 +55,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Failed to create transaction');
+      alert('Failed to update transaction');
     } finally {
       setSubmitting(false);
     }
@@ -54,10 +70,10 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
         <div className="flex justify-between items-center p-6 border-b border-border-light dark:border-border-dark sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
           <div>
             <h2 className="text-xl font-bold text-text-main-light dark:text-text-main-dark">
-              Add New Transaction
+              Edit Transaction
             </h2>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
-              Enter transaction details below.
+              Update transaction details below.
             </p>
           </div>
           <button
@@ -185,7 +201,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
             type="submit"
             className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-lg shadow-sm hover:bg-primary-hover disabled:opacity-50"
           >
-            {submitting ? 'Adding...' : 'Add Transaction'}
+            {submitting ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>
@@ -193,4 +209,4 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
   );
 };
 
-export default AddTransactionModal;
+export default EditTransactionModal;
