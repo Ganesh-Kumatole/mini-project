@@ -1,24 +1,28 @@
 import { useState } from 'react';
+import { useTransactions } from '@/hooks';
+import { formatDate, formatCurrency } from '@/utils/formatters';
+import AddTransactionModal from './AddTransactionModal';
 
 export const Transactions = () => {
-  const [transactions] = useState([
-    {
-      id: '1',
-      date: 'Jul 28, 2024',
-      description: 'Weekly groceries from SuperMart',
-      category: 'Groceries',
-      amount: 85.5,
-      type: 'Expense',
-    },
-    {
-      id: '2',
-      date: 'Jul 27, 2024',
-      description: 'Freelance project payment (May-June)',
-      category: 'Income',
-      amount: 1500.0,
-      type: 'Income',
-    },
-  ]);
+  const { transactions, loading, error, createTransaction, deleteTransaction } =
+    useTransactions();
+
+  const [showAdd, setShowAdd] = useState(false);
+
+  const handleAdd = () => setShowAdd(true);
+  const handleClose = () => setShowAdd(false);
+  const handleCreate = async (input: any) => {
+    await createTransaction(input);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Delete this transaction?')) return;
+    try {
+      await deleteTransaction(id);
+    } catch (e) {
+      // noop
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -81,7 +85,10 @@ export const Transactions = () => {
                 </span>
                 Bulk Delete
               </button>
-              <button className="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-md transition-colors flex-1 lg:flex-none">
+              <button
+                onClick={handleAdd}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-md transition-colors flex-1 lg:flex-none"
+              >
                 <span className="material-icons-outlined text-lg">add</span>
                 Add Transaction
               </button>
@@ -103,56 +110,87 @@ export const Transactions = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light dark:divide-border-dark text-sm">
-              {transactions.map((tx) => (
-                <tr
-                  key={tx.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                    {tx.date}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                    {tx.description}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                      {tx.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right text-gray-900 dark:text-gray-100 font-semibold">
-                    ${tx.amount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        tx.type === 'Expense'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                          : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                      }`}
-                    >
-                      {tx.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-3">
-                      <button className="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
-                        <span className="material-icons-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button className="text-gray-400 hover:text-red-500 transition-colors">
-                        <span className="material-icons-outlined text-lg">
-                          delete
-                        </span>
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-8 text-center text-text-secondary-light"
+                  >
+                    Loading...
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-8 text-center text-red-500"
+                  >
+                    {(error as any).message || 'Failed to load transactions'}
+                  </td>
+                </tr>
+              ) : (
+                transactions.map((tx) => (
+                  <tr
+                    key={tx.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                      {formatDate(new Date(tx.date))}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                      {tx.description}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                        {tx.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-900 dark:text-gray-100 font-semibold">
+                      {formatCurrency(tx.amount)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tx.type === 'expense' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}
+                      >
+                        {tx.type[0].toUpperCase() + tx.type.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          className="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+                          onClick={() => {
+                            /* edit flow not implemented yet */
+                          }}
+                        >
+                          <span className="material-icons-outlined text-lg">
+                            edit
+                          </span>
+                        </button>
+                        <button
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                          onClick={() => handleDelete(tx.id)}
+                        >
+                          <span className="material-icons-outlined text-lg">
+                            delete
+                          </span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+      {showAdd && (
+        <AddTransactionModal
+          isOpen={showAdd}
+          onClose={handleClose}
+          onCreate={handleCreate}
+        />
+      )}
     </div>
   );
 };

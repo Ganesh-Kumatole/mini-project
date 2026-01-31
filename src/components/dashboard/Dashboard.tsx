@@ -1,19 +1,14 @@
-import { useState } from 'react';
+import { useDashboard } from '@/hooks';
+import { formatCurrency } from '@/utils/formatters';
 
 export const Dashboard = () => {
-  const [chartData] = useState({
-    totalBalance: 12450.75,
-    monthlyIncome: 3200.0,
-    monthlyExpenses: 1850.5,
-    budgetUsage: 65,
-  });
+  const { totals, monthly, loading } = useDashboard();
 
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-8">
         Dashboard Overview
       </h1>
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Balance Card */}
@@ -29,14 +24,17 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            ${chartData.totalBalance.toFixed(2)}
+            {formatCurrency(totals.totalIncome - totals.totalExpense)}
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-green-500 flex items-center font-medium">
               <span className="material-icons text-base mr-0.5">
                 arrow_upward
               </span>
-              +3.5%
+              {/* simple delta stat */}
+              {totals.totalIncome > 0
+                ? `${(((totals.totalIncome - totals.totalExpense) / Math.max(totals.totalIncome, 1)) * 100).toFixed(1)}%`
+                : '0%'}
             </span>
             <span className="ml-2 text-text-secondary-light dark:text-text-secondary-dark text-xs">
               this month
@@ -57,7 +55,7 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            ${chartData.monthlyIncome.toFixed(2)}
+            {formatCurrency(totals.totalIncome)}
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-green-500 flex items-center font-medium">
@@ -84,7 +82,7 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            ${chartData.monthlyExpenses.toFixed(2)}
+            {formatCurrency(totals.totalExpense)}
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-red-500 flex items-center font-medium">
@@ -98,7 +96,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Budget Usage Card */}
+        {/* Budget Usage Card (uses totals to approximate) */}
         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-border-light dark:border-border-dark">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
@@ -111,22 +109,29 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            {chartData.budgetUsage}%
+            {Math.min(
+              Math.round(
+                (totals.totalExpense / Math.max(totals.totalIncome, 1)) * 100,
+              ),
+              100,
+            )}
+            %
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-text-secondary-light dark:text-text-secondary-dark text-xs">
-              20% remaining
+              approximate
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-3">
             <div
               className="bg-primary h-1.5 rounded-full"
-              style={{ width: `${chartData.budgetUsage}%` }}
+              style={{
+                width: `${Math.min((totals.totalExpense / Math.max(totals.totalIncome, 1)) * 100, 100)}%`,
+              }}
             ></div>
           </div>
         </div>
       </div>
-
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Expense Breakdown */}
@@ -134,42 +139,24 @@ export const Dashboard = () => {
           <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-6">
             Expense Breakdown
           </h3>
-          <div className="relative h-64 w-full flex justify-center items-center">
-            <p className="text-text-secondary-light dark:text-text-secondary-dark">
-              Chart will be implemented here with Chart.js
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4 mt-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-blue-600"></span>
-              <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                Groceries
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-cyan-400"></span>
-              <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                Utilities
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500"></span>
-              <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                Transport
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-              <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                Entertainment
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
-              <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                Dining Out
-              </span>
-            </div>
+          <div className="relative h-64 w-full flex flex-col gap-2">
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                Loading...
+              </div>
+            ) : (
+              monthly.map((m) => (
+                <div
+                  key={m.month}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <div>{m.month}</div>
+                  <div className="font-semibold">
+                    {formatCurrency(m.expense)}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -178,34 +165,37 @@ export const Dashboard = () => {
           <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-6">
             Income vs. Expense Trend
           </h3>
-          <div className="relative h-64 w-full flex justify-center items-center">
-            <p className="text-text-secondary-light dark:text-text-secondary-dark">
-              Chart will be implemented here with Chart.js
-            </p>
-          </div>
-          <div className="flex justify-center gap-6 mt-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-primary"></span>
-              <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                Income
-              </span>
-            </div>
+          <div className="relative h-64 w-full flex flex-col gap-2">
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                Loading...
+              </div>
+            ) : (
+              monthly.map((m) => (
+                <div
+                  key={m.month}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <div>{m.month}</div>
+                  <div className="flex gap-4">
+                    <div className="font-semibold text-green-600">
+                      {formatCurrency(m.income)}
+                    </div>
+                    <div className="font-semibold text-red-600">
+                      {formatCurrency(m.expense)}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
-
-      {/* Recent Transactions Banner */}
-      <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3 text-text-primary-light dark:text-text-primary-dark">
-          <span className="material-icons text-gray-400 dark:text-gray-500">
-            receipt
-          </span>
-          <span className="font-medium">View your recent transactions</span>
-        </div>
-        <button className="w-full sm:w-auto px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 text-text-primary-light dark:text-text-primary-dark transition-colors">
-          Go to Transactions
-        </button>
-      </div>
+      receipt
+      <span className="font-medium">View your recent transactions</span>
+      <button className="w-full sm:w-auto px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 text-text-primary-light dark:text-text-primary-dark transition-colors">
+        Go to Transactions
+      </button>
     </div>
   );
 };
