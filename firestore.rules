@@ -14,22 +14,22 @@ service cloud.firestore {
     // Users collection - own data only
     match /users/{userId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
+
+      // Transactions subcollection - users can only access their own transactions
+      match /transactions/{transactionId} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+        allow create: if isAuthenticated() && isOwner(userId);
+      }
+
+      // Budgets subcollection - users can only access their own budgets
+      match /budgets/{budgetId} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+        allow create: if isAuthenticated() && isOwner(userId);
+      }
     }
 
     // Accounts collection - users can only access their own accounts
     match /accounts/{accountId} {
-      allow read, write: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-    }
-
-    // Transactions collection - users can only access their own transactions
-    match /transactions/{transactionId} {
-      allow read, write: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-    }
-
-    // Budgets collection - users can only access their own budgets
-    match /budgets/{budgetId} {
       allow read, write: if isAuthenticated() && isOwner(resource.data.userId);
       allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
     }
