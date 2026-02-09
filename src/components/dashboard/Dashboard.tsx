@@ -202,11 +202,6 @@ export const Dashboard = () => {
           </div>
         </div>
       </div>
-      receipt
-      <span className="font-medium">View your recent transactions</span>
-      <button className="w-full sm:w-auto px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 text-text-primary-light dark:text-text-primary-dark transition-colors">
-        Go to Transactions
-      </button>
     </div>
   );
 };

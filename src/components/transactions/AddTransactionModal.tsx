@@ -53,7 +53,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
       >
         <div className="flex justify-between items-center p-6 border-b border-border-light dark:border-border-dark sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
           <div>
-            <h2 className="text-xl font-bold text-text-main-light dark:text-text-main-dark">
+            <h2 className="text-xl font-bold text-text-main-light dark:text-white">
               Add New Transaction
             </h2>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
@@ -71,13 +71,15 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
 
         <div className="p-6 overflow-y-auto custom-scrollbar space-y-5">
           <div>
-            <label className="block text-sm font-semibold mb-1.5">Amount</label>
+            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
+              Amount
+            </label>
             <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted-light dark:text-gray-400">
                 $
               </div>
               <input
-                className="block w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-primary sm:text-sm pl-7 py-2.5 placeholder-text-muted-light"
+                className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm pl-7 py-2.5 transition-all"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
@@ -88,16 +90,21 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1.5">
+            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
               Category
             </label>
             <div className="relative">
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="block w-full appearance-none rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-primary sm:text-sm py-2.5 px-3 pr-10 shadow-sm transition-colors cursor-pointer"
+                className="block w-full appearance-none rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm py-2.5 px-3 pr-10 shadow-sm transition-all cursor-pointer"
               >
-                <option value="">Select a category</option>
+                <option
+                  value=""
+                  className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  Select a category
+                </option>
                 <option>Food &amp; Dining</option>
                 <option>Transportation</option>
                 <option>Utilities</option>
@@ -112,33 +119,35 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1.5">Date</label>
+            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
+              Date
+            </label>
             <input
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="block w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-primary sm:text-sm py-2.5 px-3"
+              className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm py-2.5 px-3"
               type="date"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1.5">
+            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="block w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-text-main-light dark:text-text-main-dark focus:border-primary focus:ring-primary sm:text-sm py-2.5 px-3 resize-none"
+              className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm py-2.5 px-3 resize-none"
               rows={3}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2">
+            <label className="block text-sm font-semibold mb-2 text-text-main-light dark:text-white">
               Transaction Type
             </label>
             <div className="flex items-center space-x-6">
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-text-main-light dark:text-white cursor-pointer">
                 <input
                   checked={type === 'income'}
                   onChange={() => setType('income')}
@@ -147,7 +156,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
                 />{' '}
                 Income
               </label>
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-text-main-light dark:text-white cursor-pointer">
                 <input
                   checked={type === 'expense'}
                   onChange={() => setType('expense')}
@@ -160,7 +169,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold">
+            <label className="text-sm font-semibold text-text-main-light dark:text-white">
               Recurring Transaction
             </label>
             <input
@@ -172,18 +181,18 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           </div>
         </div>
 
-        <div className="p-6 border-t border-border-light dark:border-border-dark bg-gray-50 dark:bg-gray-800/50 flex justify-end space-x-3">
+        <div className="p-6 border-t border-border-light dark:border-border-dark bg-white dark:bg-gray-800 flex justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-text-main-light dark:text-text-main-dark bg-white dark:bg-gray-700 border border-border-light dark:border-border-dark rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600"
+            className="px-4 py-2 text-sm font-medium text-text-main-light dark:text-white bg-gray-100 dark:bg-gray-700 border border-border-light dark:border-border-dark rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Cancel
           </button>
           <button
             disabled={submitting}
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-lg shadow-sm hover:bg-primary-hover disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
             {submitting ? 'Adding...' : 'Add Transaction'}
           </button>
