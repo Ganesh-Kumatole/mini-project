@@ -106,6 +106,26 @@ Firebase Setup
 
 firebase deploy --only firestore:rules  
 
+Implementations Made So Far
+---------------------------
+
+The following functionalities have been successfully implemented in the project:
+
+• User Authentication using Firebase (Email & Password)
+• Secure user-based data access using Firebase Authentication
+• Real-time storage of income and expense transactions using Firestore
+• Add, view, and manage financial transactions
+• Budget tracking structure for monitoring expenses
+• Context API for global state management
+• Modular component-based frontend architecture
+• Responsive UI built with Tailwind CSS
+• Dark Mode support for better user experience
+• Routing and navigation using React Router DOM
+• Type-safe development using TypeScript
+• Scalable project structure for future feature additions
+
+The application is designed to support future enhancements such as advanced analytics, AI-based insights, and data export features.
+
 Usage
 -----
 
@@ -132,15 +152,42 @@ Deploy to Firebase Hosting:
 npm run build  
 firebase deploy  
 
-Contributors
-------------
+Contributions
+-------------
 
-• Ganesh Kumatole  
-• Team Members (if applicable)  
+Ganesh Kumatole
+• Project ideation and requirement analysis  
+• Firebase setup (Authentication & Firestore)  
+• Backend integration with frontend  
+• Core logic for transaction and budget management  
+• Project coordination and final integration  
+
+Vinay Molkeri
+• Project documentation and README enhancement  
+• System architecture and workflow documentation  
+• Feature analysis and implementation details  
+• Repository structuring and formatting  
+• Testing and validation support  
+
+Koushik C
+• Frontend UI component development  
+• Styling and responsiveness using Tailwind CSS  
+• Dark mode implementation  
+• UI testing and improvements  
+
+Rakesh Gadupudi
+• Routing and navigation using React Router DOM  
+• State management using Context API  
+• Utility functions and TypeScript type definitions  
+• Bug fixing and performance optimization  
+
+All team members collaboratively reviewed the application to ensure correctness, usability, and maintainability.
+
 
 License
 -------
 
 MIT License
+
 
 
