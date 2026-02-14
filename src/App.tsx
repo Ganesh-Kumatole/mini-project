@@ -9,6 +9,7 @@ import { Transactions } from './components/transactions';
 import { Budgets } from './components/budgets';
 import { Insights } from './components/insights';
 import { Settings } from './components/settings';
+import { NewsPage } from './components/news';
 import { ProtectedRoute } from './components/layout';
 
 function App() {
@@ -49,6 +50,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Insights />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/news"
+              element={
+                <ProtectedRoute>
+                  <NewsPage />
                 </ProtectedRoute>
               }
             />

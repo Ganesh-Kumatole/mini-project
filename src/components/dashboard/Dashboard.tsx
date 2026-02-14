@@ -25,8 +25,8 @@ export const Dashboard = () => {
     try {
       setNewsLoading(true);
       setNewsError(null);
-      const articles = await fetchFinancialNews();
-      setNews(articles); // Show top 3 most relevant
+      const response = await fetchFinancialNews({ sort: 'relevancy' });
+      setNews(response.articles.slice(0, 3)); // Show top 3 most relevant
     } catch (error) {
       console.error('Error loading news:', error);
       setNewsError('Unable to load news at the moment');

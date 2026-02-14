@@ -14,6 +14,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     { icon: 'receipt_long', label: 'Transactions', path: '/transactions' },
     { icon: 'savings', label: 'Budgets', path: '/budgets' },
     { icon: 'lightbulb', label: 'Insights', path: '/insights' },
+    { icon: 'newspaper', label: 'News', path: '/news' },
     { icon: 'settings', label: 'Settings', path: '/settings' },
   ];
 

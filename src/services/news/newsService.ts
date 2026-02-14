@@ -8,6 +8,20 @@ export type NewsCategory =
   | 'investment'
   | 'general';
 
+export type NewsDataType =
+  | 'news'
+  | 'blog'
+  | 'multimedia'
+  | 'forum'
+  | 'press_release'
+  | 'review'
+  | 'research'
+  | 'opinion'
+  | 'analysis'
+  | 'podcast';
+
+export type SortOption = 'relevancy' | 'source' | 'fetched_at';
+
 export interface NewsArticle {
   id: string;
   title: string;
@@ -19,6 +33,19 @@ export interface NewsArticle {
   category: NewsCategory;
   relevance: number; // 0-1 score
   country?: string;
+}
+
+export interface NewsFilterOptions {
+  countries?: string[]; // Max 5 for free tier
+  datatypes?: NewsDataType[]; // Max 5 for free tier
+  sort?: SortOption;
+  page?: string; // nextPage value from API or default page number
+}
+
+export interface NewsResponse {
+  articles: NewsArticle[];
+  nextPage: string | null;
+  totalResults: number;
 }
 
 const API_KEY = import.meta.env.VITE_NEWSDATA_API_KEY;
@@ -103,17 +130,49 @@ function getRelativeTime(dateString: string): string {
   }
 }
 
-// Main fetch function
-export async function fetchFinancialNews(): Promise<NewsArticle[]> {
+// Main fetch function with filter support
+export async function fetchFinancialNews(
+  options?: NewsFilterOptions,
+): Promise<NewsResponse> {
   const allArticles: NewsArticle[] = [];
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}?apikey=${API_KEY}&language=en&size=7`,
-    );
+  const size = 9; // 3x3 grid per page
 
-    if (!response.ok) {
-      console.error(`NewsData.io error :`, response.statusText);
+  try {
+    // Build query parameters
+    const params = new URLSearchParams({
+      apikey: API_KEY,
+      language: 'en',
+      size: size.toString(),
+      removeduplicate: '1', // Remove duplicate articles
+      q: 'finance OR economy OR inflation OR "interest rate" OR investment OR savings OR spending',
+    });
+
+    // Add sort parameter (default: relevancy)
+    if (options?.sort) {
+      params.append('sort', options.sort);
+    } else {
+      params.append('sort', 'relevancy');
     }
+
+    // Add country filter (max 5 for free tier)
+    if (options?.countries && options.countries.length > 0) {
+      const countriesStr = options.countries.slice(0, 5).join(',');
+      params.append('country', countriesStr);
+    }
+
+    // Add datatype filter (max 5 for free tier)
+    if (options?.datatypes && options.datatypes.length > 0) {
+      const datatypesStr = options.datatypes.slice(0, 5).join(',');
+      params.append('datatype', datatypesStr);
+    }
+
+    // Add pagination support
+    if (options?.page && options.page.length > 0) {
+      params.append('page', options.page);
+    }
+
+    const url = `${API_BASE_URL}?${params.toString()}`;
+    const response = await fetch(url);
 
     const data = await response.json();
 
@@ -126,7 +185,7 @@ export async function fetchFinancialNews(): Promise<NewsArticle[]> {
         const relevance = calculateRelevance(articleCategory);
 
         allArticles.push({
-          id: `newsdata-${index}`,
+          id: `newsdata-${index}-${Date.now()}`,
           title: article.title,
           description: article.description || 'Read more for full story',
           source: article.source_id || 'NewsData',
@@ -141,9 +200,18 @@ export async function fetchFinancialNews(): Promise<NewsArticle[]> {
         });
       });
     }
+
+    return {
+      articles: allArticles,
+      nextPage: data.nextPage || null,
+      totalResults: data.totalResults || allArticles.length,
+    };
   } catch (error) {
     console.error('Failed to fetch news from NewsData.io:', error);
+    return {
+      articles: [],
+      nextPage: null,
+      totalResults: 0,
+    };
   }
-
-  return allArticles;
 }
