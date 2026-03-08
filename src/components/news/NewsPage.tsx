@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Layout } from '../layout';
 import { NewsCard } from '../dashboard/NewsCard';
 import {
   fetchFinancialNews,

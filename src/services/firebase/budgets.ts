@@ -4,20 +4,22 @@ import {
   updateDoc,
   deleteDoc,
   getDocs,
+  query,
+  where,
   doc,
   Timestamp,
   onSnapshot,
-} from 'firebase/firestore'
-import { db } from './config'
-import { Budget, CreateBudgetInput, UpdateBudgetInput } from '@/types'
+} from 'firebase/firestore';
+import { db } from './config';
+import { Budget, CreateBudgetInput, UpdateBudgetInput } from '@/types';
 
 const getBudgetsCollection = (userId: string) => {
-  return collection(db, 'users', userId, 'budgets')
-}
+  return collection(db, 'users', userId, 'budgets');
+};
 
 export const createBudget = async (
   userId: string,
-  data: CreateBudgetInput
+  data: CreateBudgetInput,
 ): Promise<string> => {
   const docRef = await addDoc(getBudgetsCollection(userId), {
     ...data,
@@ -25,34 +27,38 @@ export const createBudget = async (
     endDate: Timestamp.fromDate(data.endDate),
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
-  })
-  return docRef.id
-}
+  });
+  return docRef.id;
+};
 
 export const updateBudget = async (
   userId: string,
-  data: UpdateBudgetInput
+  data: UpdateBudgetInput,
 ): Promise<void> => {
-  const { id, ...updateData } = data
-  const docRef = doc(db, 'users', userId, 'budgets', id)
+  const { id, ...updateData } = data;
+  const docRef = doc(db, 'users', userId, 'budgets', id);
   await updateDoc(docRef, {
     ...updateData,
-    startDate: updateData.startDate ? Timestamp.fromDate(updateData.startDate) : undefined,
-    endDate: updateData.endDate ? Timestamp.fromDate(updateData.endDate) : undefined,
+    startDate: updateData.startDate
+      ? Timestamp.fromDate(updateData.startDate)
+      : undefined,
+    endDate: updateData.endDate
+      ? Timestamp.fromDate(updateData.endDate)
+      : undefined,
     updatedAt: Timestamp.now(),
-  })
-}
+  });
+};
 
 export const deleteBudget = async (
   userId: string,
-  budgetId: string
+  budgetId: string,
 ): Promise<void> => {
-  const docRef = doc(db, 'users', userId, 'budgets', budgetId)
-  await deleteDoc(docRef)
-}
+  const docRef = doc(db, 'users', userId, 'budgets', budgetId);
+  await deleteDoc(docRef);
+};
 
 export const getBudgets = async (userId: string): Promise<Budget[]> => {
-  const snapshot = await getDocs(getBudgetsCollection(userId))
+  const snapshot = await getDocs(getBudgetsCollection(userId));
   return snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -60,13 +66,13 @@ export const getBudgets = async (userId: string): Promise<Budget[]> => {
     endDate: doc.data().endDate.toDate(),
     createdAt: doc.data().createdAt.toDate(),
     updatedAt: doc.data().updatedAt.toDate(),
-  })) as Budget[]
-}
+  })) as Budget[];
+};
 
 export const subscribeToBudgets = (
   userId: string,
-  callback: (budgets: Budget[]) => void
-): () => void => {
+  callback: (budgets: Budget[]) => void,
+): (() => void) => {
   return onSnapshot(getBudgetsCollection(userId), (snapshot) => {
     const budgets = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -75,7 +81,38 @@ export const subscribeToBudgets = (
       endDate: doc.data().endDate.toDate(),
       createdAt: doc.data().createdAt.toDate(),
       updatedAt: doc.data().updatedAt.toDate(),
-    })) as Budget[]
-    callback(budgets)
-  })
-}
+    })) as Budget[];
+    callback(budgets);
+  });
+};
+
+// Calculate spent amount for a budget
+export const calculateBudgetSpent = async (
+  userId: string,
+  budget: Budget,
+): Promise<number> => {
+  const transactionsRef = collection(db, 'users', userId, 'transactions');
+  const q = query(
+    transactionsRef,
+    where('category', '==', budget.category),
+    where('type', '==', 'expense'),
+    where('date', '>=', Timestamp.fromDate(budget.startDate)),
+    where('date', '<=', Timestamp.fromDate(budget.endDate)),
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.reduce((sum, doc) => sum + doc.data().amount, 0);
+};
+
+// Update budget's spentAmount field
+export const updateBudgetSpent = async (
+  userId: string,
+  budgetId: string,
+  spentAmount: number,
+): Promise<void> => {
+  const docRef = doc(db, 'users', userId, 'budgets', budgetId);
+  await updateDoc(docRef, {
+    spentAmount,
+    updatedAt: Timestamp.now(),
+  });
+};

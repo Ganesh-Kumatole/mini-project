@@ -1,2 +1,3 @@
-export * from './AuthContext'
-export * from './ThemeContext'
+export * from './AuthContext';
+export * from './NotificationsContext'; // NEW
+export * from './ThemeContext';

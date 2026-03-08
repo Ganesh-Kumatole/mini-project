@@ -1,10 +1,20 @@
-import { useMemo } from 'react';
-import { useBudgets, useTransactions } from '@/hooks';
+import { useMemo, useEffect, useState } from 'react';
+import { useBudgets, useTransactions, useNotifications } from '@/hooks';
+import { useToast } from '@/context/ToastContext';
 import { formatCurrency } from '@/utils/formatters';
+import { getBudgetPercentage, shouldNotify } from '@/types/budget';
+import { AddBudgetModal, BudgetDetailsModal } from './index';
 
 export const Budgets = () => {
-  const { budgets, loading, createBudget, deleteBudget } = useBudgets();
+  const { budgets, loading, createBudget, updateBudget, deleteBudget } =
+    useBudgets();
   const { transactions } = useTransactions();
+  const { createNotification } = useNotifications();
+  const { addToast } = useToast();
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const monthlyLimit = useMemo(
     () => budgets.reduce((s, b) => s + (b.limitAmount ?? 0), 0),
@@ -23,26 +33,73 @@ export const Budgets = () => {
     }, 0);
   }, [transactions]);
 
-  const handleAdd = async () => {
-    const category = window.prompt('Category');
-    if (!category) return;
-    const rawLimit = window.prompt('Limit amount (e.g. 200)');
-    if (!rawLimit) return;
-    const limitAmount = Number(rawLimit);
-    const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    try {
-      await createBudget({
-        category,
-        limitAmount,
-        period: 'monthly',
-        startDate,
-        endDate,
-      });
-    } catch (e) {
-      // noop
+  // Check for budget notifications
+  useEffect(() => {
+    const checkBudgetNotifications = async () => {
+      for (const budget of budgets) {
+        const spent = transactions.reduce((s, t) => {
+          const d = new Date(t.date);
+          const start = new Date(budget.startDate);
+          const end = new Date(budget.endDate);
+          if (t.category === budget.category && d >= start && d <= end)
+            return s + t.amount;
+          return s;
+        }, 0);
+
+        const percentage = getBudgetPercentage(spent, budget.limitAmount);
+
+        if (
+          shouldNotify(
+            percentage,
+            budget.notificationThreshold,
+            budget.notificationSent,
+            budget.lastNotificationDate,
+          )
+        ) {
+          try {
+            // Create notification
+            await createNotification({
+              type: percentage > 100 ? 'budget_exceeded' : 'budget_warning',
+              title: `Budget Alert: ${budget.category}`,
+              message: `You've used ${percentage}% of your ${budget.category} budget (${formatCurrency(spent)} of ${formatCurrency(budget.limitAmount)})`,
+              actionUrl: '/budgets',
+              metadata: {
+                budgetId: budget.id,
+                category: budget.category,
+                percentageUsed: percentage,
+              },
+            });
+
+            // Update budget to mark notification as sent
+            await updateBudget({
+              id: budget.id,
+              notificationSent: true,
+              lastNotificationDate: new Date(),
+              spentAmount: spent,
+            });
+
+            // Show toast notification
+            addToast({
+              type: 'warning',
+              title: 'Budget Alert',
+              message: `${budget.category} budget is ${percentage}% used`,
+            });
+          } catch (error) {
+            console.error('Failed to create budget notification:', error);
+          }
+        }
+      }
+    };
+
+    if (budgets.length > 0 && transactions.length > 0) {
+      checkBudgetNotifications();
     }
+  }, [budgets, transactions, createNotification, updateBudget, addToast]);
+
+  const handleAdd = () => setShowAddModal(true);
+  const handleCloseModal = () => setShowAddModal(false);
+  const handleCreateBudget = async (input: any) => {
+    await createBudget(input);
   };
 
   const handleDelete = async (id: string) => {
@@ -52,6 +109,16 @@ export const Budgets = () => {
     } catch (e) {
       // noop
     }
+  };
+
+  const handleViewDetails = (budget: any) => {
+    setSelectedBudget(budget);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedBudget(null);
   };
 
   const budgetUsagePercent = Math.min(
@@ -193,46 +260,113 @@ export const Budgets = () => {
                   return s + t.amount;
                 return s;
               }, 0);
-              const percentage = (spent / (budget.limitAmount ?? 1)) * 100;
+              const percentage = getBudgetPercentage(spent, budget.limitAmount);
+              const isNearLimit = percentage >= budget.notificationThreshold;
+              const isExceeded = percentage > 100;
+
               return (
                 <div
                   key={budget.id}
-                  className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-5 flex flex-col justify-between transition-colors duration-200"
+                  className={`bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border p-5 flex flex-col justify-between transition-colors duration-200 ${
+                    isExceeded
+                      ? 'border-red-300 dark:border-red-700'
+                      : isNearLimit
+                        ? 'border-yellow-300 dark:border-yellow-700'
+                        : 'border-border-light dark:border-border-dark'
+                  }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-bold text-lg text-text-light dark:text-text-dark">
                         {budget.category}
                       </h3>
-                      <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                        {budget.period}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {isExceeded && (
+                          <span className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                            <span className="material-icons-round text-xs">
+                              warning
+                            </span>
+                            Exceeded
+                          </span>
+                        )}
+                        {isNearLimit && !isExceeded && (
+                          <span className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                            <span className="material-icons-round text-xs">
+                              warning
+                            </span>
+                            Near Limit
+                          </span>
+                        )}
+                        <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                          {budget.period}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-4">
-                      Budget for {budget.category}
+                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                      Budget for {budget.category} • Alert at{' '}
+                      {budget.notificationThreshold}%
                     </p>
                     <div className="space-y-3 mb-4">
                       <div className="flex justify-between text-sm">
                         <span className="text-text-secondary-light dark:text-text-secondary-dark">
                           Spent
                         </span>
-                        <span className="font-semibold text-text-light dark:text-text-dark">
+                        <span
+                          className={`font-semibold ${isExceeded ? 'text-red-600 dark:text-red-400' : isNearLimit ? 'text-yellow-600 dark:text-yellow-400' : 'text-text-light dark:text-text-dark'}`}
+                        >
                           {formatCurrency(spent)}
                         </span>
                       </div>
                       <div className="overflow-hidden h-2 rounded-full bg-gray-200 dark:bg-gray-700">
                         <div
-                          className={`h-full ${percentage > 100 ? 'bg-red-500' : 'bg-primary'}`}
+                          className={`h-full ${isExceeded ? 'bg-red-500' : isNearLimit ? 'bg-yellow-500' : 'bg-primary'}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         ></div>
                       </div>
                       <div className="flex justify-between text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                        <span>
-                          {formatCurrency(budget.limitAmount ?? 0)} limit
+                        <span>{formatCurrency(budget.limitAmount)} limit</span>
+                        <span
+                          className={
+                            isExceeded
+                              ? 'text-red-600 dark:text-red-400 font-semibold'
+                              : isNearLimit
+                                ? 'text-yellow-600 dark:text-yellow-400 font-semibold'
+                                : ''
+                          }
+                        >
+                          {percentage}% used
                         </span>
-                        <span>{percentage.toFixed(0)}% used</span>
                       </div>
                     </div>
+
+                    {/* Budget Alert within card */}
+                    {isNearLimit && (
+                      <div
+                        className={`rounded-lg p-3 mb-4 flex items-start gap-2 ${isExceeded ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'}`}
+                      >
+                        <span
+                          className={`material-icons-round mt-0.5 text-sm ${isExceeded ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`}
+                        >
+                          warning
+                        </span>
+                        <div>
+                          <p
+                            className={`text-xs font-semibold ${isExceeded ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`}
+                          >
+                            {isExceeded
+                              ? 'Budget Exceeded!'
+                              : 'Approaching Limit'}
+                          </p>
+                          <p
+                            className={`text-xs mt-1 ${isExceeded ? 'text-red-700 dark:text-red-300' : 'text-yellow-700 dark:text-yellow-300'}`}
+                          >
+                            {isExceeded
+                              ? `Over budget by ${formatCurrency(spent - budget.limitAmount)}`
+                              : `${budget.notificationThreshold - percentage}% remaining until limit`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -241,7 +375,10 @@ export const Budgets = () => {
                     >
                       Delete
                     </button>
-                    <button className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                    <button
+                      className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      onClick={() => handleViewDetails(budget)}
+                    >
                       View Details
                     </button>
                   </div>
@@ -251,6 +388,19 @@ export const Budgets = () => {
           )}
         </div>
       </div>
+
+      <AddBudgetModal
+        isOpen={showAddModal}
+        onClose={handleCloseModal}
+        onCreate={handleCreateBudget}
+      />
+
+      <BudgetDetailsModal
+        isOpen={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+        budget={selectedBudget}
+        transactions={transactions}
+      />
     </div>
   );
 };
