@@ -104,6 +104,58 @@ Respond ONLY with a strictly valid JSON object (no markdown, no explanation outs
   };
 };
 
+// ── AI Chat Follow-up ────────────────────────────────────────────────────────
+
+export const askFollowUp = async (
+  stats: FinancialStats,
+  question: string,
+  conversationHistory: { role: 'user' | 'assistant'; content: string }[] = []
+): Promise<string> => {
+  const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY;
+  if (!HF_API_KEY) throw new Error('Hugging Face API key is missing');
+
+  const topCatText = stats.topCategories
+    .map((c, i) => `${i + 1}. ${c.name}: $${c.amount.toFixed(2)}`)
+    .join(', ');
+
+  const systemPrompt = `You are a friendly, concise personal finance advisor AI.
+The user's current financial context (this month):
+- Income: $${stats.totalIncome.toFixed(2)}, Expenses: $${stats.totalExpense.toFixed(2)}
+- Savings Rate: ${stats.savingsRate.toFixed(1)}%
+- Month-over-month spending change: ${stats.monthOverMonthChange >= 0 ? '+' : ''}${stats.monthOverMonthChange.toFixed(1)}%
+- Top categories: ${topCatText || 'No data'}
+- Budget alerts: ${stats.budgetAlerts.length > 0 ? stats.budgetAlerts.map(b => `${b.category} (${b.percentUsed}% used)`).join(', ') : 'None'}
+
+Answer the user's question concisely in 2-4 sentences. Use plain text, no markdown.`;
+
+  const messages = [
+    { role: 'system' as const, content: systemPrompt },
+    ...conversationHistory,
+    { role: 'user' as const, content: question },
+  ];
+
+  const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
+    headers: {
+      Authorization: `Bearer ${HF_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      model: 'Qwen/Qwen2.5-7B-Instruct:together',
+      messages,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    console.error('AI chat error:', err);
+    throw new Error('Failed to get AI response: ' + response.statusText);
+  }
+
+  const result = await response.json();
+  return result.choices?.[0]?.message?.content?.trim() || 'Sorry, I could not generate a response.';
+};
+
 export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
   const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY;
   if (!HF_API_KEY) {
