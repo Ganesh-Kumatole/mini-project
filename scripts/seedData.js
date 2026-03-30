@@ -59,7 +59,7 @@ function generateTransactions(userId, count = 30) {
   const now = new Date();
 
   for (let i = 0; i < count; i++) {
-    const daysAgo = Math.floor(Math.random() * 90); // Last 90 days
+    const daysAgo = Math.floor(Math.random() * 30); // Focus on last 30 days
     const txDate = new Date(now);
     txDate.setDate(txDate.getDate() - daysAgo);
 
@@ -82,6 +82,23 @@ function generateTransactions(userId, count = 30) {
     });
   }
 
+  // Add 5 fresh, high-value expenses in the last 7 days
+  for (let i = 0; i < 5; i++) {
+    const txDate = new Date(now);
+    txDate.setDate(txDate.getDate() - Math.floor(Math.random() * 7));
+
+    transactions.push({
+      amount: Math.floor(Math.random() * 800) + 300,
+      category: categories[Math.floor(Math.random() * categories.length)],
+      date: admin.firestore.Timestamp.fromDate(txDate),
+      description: `Premium Recent Expense #${i + 1}`,
+      type: 'expense',
+      userId,
+      createdAt: admin.firestore.Timestamp.now(),
+      updatedAt: admin.firestore.Timestamp.now(),
+    });
+  }
+
   return transactions;
 }
 
@@ -95,9 +112,12 @@ function generateBudgets(userId) {
     {
       category: 'Food & Dining',
       limitAmount: 500,
+      spentAmount: 0,
       period: 'monthly',
       startDate: admin.firestore.Timestamp.fromDate(startOfMonth),
       endDate: admin.firestore.Timestamp.fromDate(endOfMonth),
+      notificationThreshold: 90,
+      notificationSent: false,
       userId,
       createdAt: admin.firestore.Timestamp.now(),
       updatedAt: admin.firestore.Timestamp.now(),
@@ -105,9 +125,12 @@ function generateBudgets(userId) {
     {
       category: 'Transportation',
       limitAmount: 300,
+      spentAmount: 0,
       period: 'monthly',
       startDate: admin.firestore.Timestamp.fromDate(startOfMonth),
       endDate: admin.firestore.Timestamp.fromDate(endOfMonth),
+      notificationThreshold: 90,
+      notificationSent: false,
       userId,
       createdAt: admin.firestore.Timestamp.now(),
       updatedAt: admin.firestore.Timestamp.now(),
@@ -115,9 +138,12 @@ function generateBudgets(userId) {
     {
       category: 'Entertainment',
       limitAmount: 200,
+      spentAmount: 0,
       period: 'monthly',
       startDate: admin.firestore.Timestamp.fromDate(startOfMonth),
       endDate: admin.firestore.Timestamp.fromDate(endOfMonth),
+      notificationThreshold: 90,
+      notificationSent: false,
       userId,
       createdAt: admin.firestore.Timestamp.now(),
       updatedAt: admin.firestore.Timestamp.now(),
@@ -125,9 +151,12 @@ function generateBudgets(userId) {
     {
       category: 'Shopping',
       limitAmount: 400,
+      spentAmount: 0,
       period: 'monthly',
       startDate: admin.firestore.Timestamp.fromDate(startOfMonth),
       endDate: admin.firestore.Timestamp.fromDate(endOfMonth),
+      notificationThreshold: 90,
+      notificationSent: false,
       userId,
       createdAt: admin.firestore.Timestamp.now(),
       updatedAt: admin.firestore.Timestamp.now(),
