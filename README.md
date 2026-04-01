@@ -21,11 +21,40 @@ Features
 
 💰 Transaction Management  
 🏦 Account Management  
-📊 Budget Tracking  
+📊 Budget Tracking (Fully Functional)  
+🔔 In-app Notifications for budget limits and overspending  
+🎤 Voice-based Transaction Entry using AI  
 🤖 AI-Powered Expense Categorization  
 📈 Financial Analytics & Insights  
+🧠 AI Insights Dashboard with predictions and recommendations  
+📄 Export Financial Analysis as PDF  
 🌙 Dark Mode Support  
 🔐 Firebase Authentication  
+
+AI & Advanced Features
+---------------------
+
+The application integrates advanced AI capabilities to enhance user experience and automate financial tracking:
+
+Voice-based Transaction Entry
+• Uses OpenAI Whisper model for speech-to-text conversion  
+• Transcribed input is processed using Qwen 2.5 LLM  
+• Extracts relevant financial details from user speech  
+• Automatically fills transaction form fields  
+
+AI Insights Dashboard
+• Provides a short summary of user's financial history  
+• Displays quick insight cards for better understanding  
+• Predicts financial trends until the end of the month  
+• Includes savings goal tracker (set and monitor goals)  
+• Compares weekday vs weekend spending behavior  
+• Shows budget health using progress indicators  
+• Displays multiple charts and graphs for analysis  
+• Generates AI-based financial recommendations  
+• Allows exporting analysis reports as PDF  
+• Includes AI chat support with follow-up questions (Qwen-2.5-7B model)  
+
+All AI models are accessed via Hugging Face Inference API for seamless integration.
 
 Tech Stack
 ----------
@@ -109,22 +138,27 @@ firebase deploy --only firestore:rules
 Implementations Made So Far
 ---------------------------
 
-The following functionalities have been successfully implemented in the project:
+The following functionalities have been successfully implemented:
 
-• User Authentication using Firebase (Email & Password)
-• Secure user-based data access using Firebase Authentication
-• Real-time storage of income and expense transactions using Firestore
-• Add, view, and manage financial transactions
-• Budget tracking structure for monitoring expenses
-• Context API for global state management
-• Modular component-based frontend architecture
-• Responsive UI built with Tailwind CSS
-• Dark Mode support for better user experience
-• Routing and navigation using React Router DOM
-• Type-safe development using TypeScript
-• Scalable project structure for future feature additions
+• User Authentication using Firebase (Email & Password)  
+• Secure user-specific data storage using Firestore  
+• Add, view, and manage income and expense transactions  
+• Fully functional Budget Tracking system  
+• In-app notifications for budget limits and overspending  
+• Voice-based transaction entry using AI (Speech → Data extraction → Auto-fill)  
+• AI-powered financial insights and analytics dashboard  
+• Monthly prediction system based on current financial data  
+• Savings goal tracking system  
+• Comparison of weekday vs weekend transactions  
+• Budget health monitoring with progress indicators  
+• Export financial reports as PDF  
+• AI chatbot for financial queries and follow-up questions  
+• Context API for global state management  
+• Responsive UI with Tailwind CSS and Dark Mode  
+• Routing using React Router DOM  
+• Type-safe development using TypeScript  
 
-The application is designed to support future enhancements such as advanced analytics, AI-based insights, and data export features.
+The project is structured to support scalability and future enhancements in AI and financial analytics.
 
 Usage
 -----
