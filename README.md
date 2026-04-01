@@ -1,228 +1,266 @@
-Fintracker – Financial Management Application
---------------------------------------------
+<div align="center">
 
-A modern personal finance management application designed to help users efficiently track income, expenses, and overall financial health. Built using React, TypeScript, Vite, and Firebase, Fintracker provides a clean, fast, and secure experience for personal finance management.
+# 💰 FinTracker
 
-Project Description
--------------------
+### A Premium Personal Finance Management Workspace
 
-Managing personal finances manually can be inefficient and error-prone. Fintracker solves this problem by providing a digital platform where users can record transactions, analyze spending patterns, and gain insights into their financial behavior. The application focuses on simplicity, real-time updates, and scalability.
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-10-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
 
-Objectives
-----------
+**Track. Analyze. Grow.**  
+_A local-first, privacy-respecting finance tool — not a SaaS product._
 
-• To track income and expense transactions efficiently  
-• To provide clear insights into financial activities  
-• To offer a secure and user-friendly interface  
-• To enable future scalability with analytics and AI-based features  
+</div>
 
-Features
---------
+---
 
-💰 Transaction Management  
-🏦 Account Management  
-📊 Budget Tracking (Fully Functional)  
-🔔 In-app Notifications for budget limits and overspending  
-🎤 Voice-based Transaction Entry using AI  
-🤖 AI-Powered Expense Categorization  
-📈 Financial Analytics & Insights  
-🧠 AI Insights Dashboard with predictions and recommendations  
-📄 Export Financial Analysis as PDF  
-🌙 Dark Mode Support  
-🔐 Firebase Authentication  
+## 🧱 Tech Stack
 
-AI & Advanced Features
----------------------
+| Layer                  | Technology                                     |
+| ---------------------- | ---------------------------------------------- |
+| **Frontend Framework** | React 18 + TypeScript 5.2                      |
+| **Build Tool**         | Vite 5                                         |
+| **Styling**            | Tailwind CSS 3                                 |
+| **Routing**            | React Router DOM v6                            |
+| **Backend / Database** | Firebase 10 (Firestore)                        |
+| **Authentication**     | Firebase Auth (Email + Google OAuth)           |
+| **Charts**             | Chart.js 4 + react-chartjs-2                   |
+| **AI / ML**            | HuggingFace Inference API (Whisper + Qwen 2.5) |
+| **PDF Export**         | jsPDF + html2canvas                            |
+| **News**               | NewsAPI                                        |
+| **Currency Rates**     | Open Exchange Rates API                        |
 
-The application integrates advanced AI capabilities to enhance user experience and automate financial tracking:
+---
 
-Voice-based Transaction Entry
-• Uses OpenAI Whisper model for speech-to-text conversion  
-• Transcribed input is processed using Qwen 2.5 LLM  
-• Extracts relevant financial details from user speech  
-• Automatically fills transaction form fields  
+## Features:
 
-AI Insights Dashboard
-• Provides a short summary of user's financial history  
-• Displays quick insight cards for better understanding  
-• Predicts financial trends until the end of the month  
-• Includes savings goal tracker (set and monitor goals)  
-• Compares weekday vs weekend spending behavior  
-• Shows budget health using progress indicators  
-• Displays multiple charts and graphs for analysis  
-• Generates AI-based financial recommendations  
-• Allows exporting analysis reports as PDF  
-• Includes AI chat support with follow-up questions (Qwen-2.5-7B model)  
+### 📊 Dashboard
 
-All AI models are accessed via Hugging Face Inference API for seamless integration.
+- Live **Net Balance**, **Monthly Income**, and **Monthly Expense** stat cards computed directly from Firestore in real-time
+- Interactive **Line Chart** (6-month income vs. expense trends)
+- **Donut Chart** — expense breakdown by category for the last 30 days
+- **Budget vs Actual Bar Chart** — visual budget utilization
+- Quick **Add Transaction** shortcut right from the dashboard
 
-Tech Stack
-----------
+### 💳 Transaction Management
 
-Frontend: React 18 + TypeScript  
-Build Tool: Vite  
-Styling: Tailwind CSS  
-Backend: Firebase (Firestore, Authentication)  
-Charts: Chart.js  
-Routing: React Router DOM  
+- Add, edit, and delete transactions with a polished modal UI
+- **Dual-category system** — separate curated category lists for Income (Salary, Freelance, Business, Dividends, etc.) and Expense (Food & Dining, Housing, Subscriptions, Fitness, etc.)
+- **Voice-powered entry** — speak your transaction naturally, AI fills the form automatically
+- **Recurring transaction** toggle
+- Dynamic currency symbol in all amount fields (respects your active currency setting)
+- Filter & search across all transaction history
 
-System Architecture
--------------------
+### 🎤 AI Voice Input
 
-The application follows a client-server architecture:
+- Records audio via the browser's MediaRecorder API
+- Transcribes speech using **OpenAI Whisper** (via HuggingFace Inference API)
+- Extracts structured transaction data (amount, category, type, description) using **Qwen 2.5 LLM**
+- Auto-fills the transaction form — just speak and confirm
 
-• Frontend handles UI rendering and user interactions  
-• Firebase Authentication manages secure user login  
-• Firestore stores transaction and user data in real time  
-• Context API manages global application state  
+### 🧠 AI Insights
 
-This architecture ensures scalability, security, and real-time data synchronization.
+- **Personalized AI Financial Summary** generated from your actual transaction history
+- **Predictive month-end spend forecast** based on daily averages
+- **Month-over-Month change** analysis
+- **Weekday vs Weekend spending** breakdown
+- **Top expense category** deep-dive
+- **Budget Health** monitor with per-category progress indicators
+- **Savings Goal Tracker** — set a monthly target and watch progress with a dynamic color-coded progress bar
+- **AI Tip Cards** — tailored financial recommendations (not generic advice)
+- **AI Chatbot** — ask follow-up financial questions powered by Qwen-2.5-7B
+- Export full analysis as a **PDF report**
 
-Getting Started
----------------
+### 🏦 Budget Management
 
-Prerequisites
--------------
+- Create budgets per expense category with configurable periods (monthly, weekly, etc.)
+- Set **notification thresholds** (e.g., alert at 75% spending)
+- Real-time **spent vs. limit** progress bars with color-coded status (safe / warning / over-budget)
+- Edit or delete budgets with an inline modal
 
-Node.js 18+ and npm  
-Firebase account  
+### 📰 Financial News Feed
 
-Installation
-------------
+- Live financial news via **NewsAPI**
+- **Category tabs** — General, Markets, Crypto, Economy, and more
+- **Client-side search** with `/` keyboard shortcut
+- **Country & content-type filters** with active filter pills
+- **Bookmark** articles (persisted to localStorage)
+- **Auto-refresh** every 30 minutes with countdown timer
+- Skeleton loading states and polished error UI
 
-Clone the repository:
+### ⚙️ Settings
 
-git clone https://github.com/Ganesh-Kumatole/mini-project.git  
-cd mini-project  
+- **Profile Management** — display name & profile picture upload (Firebase Storage)
+- **Multi-Currency support** — live USD → INR (and others) exchange rate conversion affecting all data points instantly
+- **Theme toggle** — Dark / Light mode with system preference detection
+- **Notification preferences** — in-app and budget alert toggles
+- **Security** — password change and account management
+- **Danger Zone** — data reset option
 
-Install dependencies:
+### 🔐 Authentication
 
-npm install  
+- Firebase Auth — Email/Password and **Google OAuth**
+- Two-column polished login/signup pages with branding panel
+- Field-level validation with blur triggers and live password strength meter (sign-up)
+- **Return-URL session persistence** — users return to their intended page after login
+- Protected Routes with automatic redirect
 
-Set up environment variables:
+---
 
-• Copy `.env.example` to `.env`  
-• Fill in your Firebase configuration values  
+## 🏗️ Architecture
 
-Start the development server:
+```
+fintracker/
+├── src/
+│   ├── components/
+│   │   ├── auth/          # LandingPage, LoginPage, SignupPage
+│   │   ├── budgets/       # Budgets + EditBudgetModal
+│   │   ├── common/        # ErrorBoundary, Toast, ProtectedRoute
+│   │   ├── dashboard/     # Dashboard, Charts, StatCards, NewsCard
+│   │   ├── insights/      # Insights, AI Chat, SavingsGoalSection
+│   │   ├── layout/        # Header, Sidebar, ProtectedRoute
+│   │   ├── news/          # NewsPage
+│   │   ├── settings/      # Settings
+│   │   └── transactions/  # Transactions, AddModal, EditModal
+│   ├── constants/
+│   │   └── categories.ts  # Centralized income/expense category lists
+│   ├── context/
+│   │   ├── AuthContext     # Firebase user state
+│   │   ├── CurrencyContext # Active currency + live exchange rate
+│   │   ├── ThemeContext    # Dark/Light mode
+│   │   └── ToastContext    # App-wide toast notifications
+│   ├── hooks/
+│   │   ├── useTransactions # Firestore real-time subscription
+│   │   ├── useBudgets      # Budget CRUD + real-time listener
+│   │   ├── useDashboard    # Aggregated monthly totals
+│   │   ├── useInsights     # Complex computed financial metrics
+│   │   └── useNotifications
+│   ├── services/
+│   │   ├── firebase/       # Firestore CRUD wrappers
+│   │   ├── ai/             # HuggingFace Whisper + Qwen integration
+│   │   └── news/           # NewsAPI integration
+│   ├── types/              # TypeScript interfaces & type definitions
+│   └── utils/              # formatters, helpers
+├── images/                 # App screenshots
+├── firestore.rules         # Firestore security rules
+└── firebase.json           # Firebase hosting config
+```
 
-npm run dev  
+---
 
-Build for production:
+## 🚀 Getting Started
 
-npm run build  
+### Prerequisites
 
-Project Structure
------------------
+- **Node.js** 18+ and npm
+- **Firebase** account (free tier is sufficient)
+- **HuggingFace** account + API token (for AI features)
 
-src/  
-├── components/     # React components organized by feature  
-├── context/        # React Context providers  
-├── hooks/          # Custom React hooks  
-├── services/       # Firebase and external services  
-├── types/          # TypeScript type definitions  
-├── utils/          # Utility functions  
-└── styles/         # Global styles  
+### Installation
 
-Firebase Setup
---------------
+**1. Clone the repository**
 
-• Create a Firebase project using Firebase Console  
-• Enable Authentication (Email/Password)  
-• Create a Firestore database  
-• Copy Firebase configuration into `.env` file  
-• Deploy Firestore rules:
+```bash
+git clone https://github.com/Ganesh-Kumatole/mini-project.git
+cd mini-project
+```
 
-firebase deploy --only firestore:rules  
+**2. Install dependencies**
 
-Implementations Made So Far
----------------------------
+```bash
+npm install
+```
 
-The following functionalities have been successfully implemented:
+**3. Configure environment variables**
 
-• User Authentication using Firebase (Email & Password)  
-• Secure user-specific data storage using Firestore  
-• Add, view, and manage income and expense transactions  
-• Fully functional Budget Tracking system  
-• In-app notifications for budget limits and overspending  
-• Voice-based transaction entry using AI (Speech → Data extraction → Auto-fill)  
-• AI-powered financial insights and analytics dashboard  
-• Monthly prediction system based on current financial data  
-• Savings goal tracking system  
-• Comparison of weekday vs weekend transactions  
-• Budget health monitoring with progress indicators  
-• Export financial reports as PDF  
-• AI chatbot for financial queries and follow-up questions  
-• Context API for global state management  
-• Responsive UI with Tailwind CSS and Dark Mode  
-• Routing using React Router DOM  
-• Type-safe development using TypeScript  
+Create a `.env` file in the root directory:
 
-The project is structured to support scalability and future enhancements in AI and financial analytics.
+```env
+# Firebase
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 
-Usage
------
+# HuggingFace (AI features)
+VITE_HUGGINGFACE_API_KEY=hf_your_token_here
 
-• Register or log in using Firebase Authentication  
-• Add income and expense transactions  
-• View financial summaries and insights  
-• Track budgets and spending behavior  
+# NewsAPI (Financial News)
+VITE_NEWS_API_KEY=your_newsapi_key
+```
 
-Future Enhancements
--------------------
+**4. Start the development server**
 
-• Advanced data visualization dashboards  
-• Monthly and yearly financial reports  
-• Export data as CSV or PDF  
-• Category-based expense analytics  
-• Mobile application version  
-• Enhanced AI-based expense predictions  
+```bash
+npm run dev
+```
 
-Deployment
-----------
+The app will be live at `http://localhost:3000`.
 
-Deploy to Firebase Hosting:
+---
 
-npm run build  
-firebase deploy  
+## 🔥 Firebase Setup
 
-Contributions
--------------
+**1. Create a Firebase project**
 
-Ganesh Kumatole
-• Project ideation and requirement analysis  
-• Firebase setup (Authentication & Firestore)  
-• Backend integration with frontend  
-• Core logic for transaction and budget management  
-• Project coordination and final integration  
+- Go to [Firebase Console](https://console.firebase.google.com/)
+- Create a new project and register a Web App
 
-Vinay Molkeri
-• Project documentation and README enhancement  
-• System architecture and workflow documentation  
-• Feature analysis and implementation details  
-• Repository structuring and formatting  
-• Testing and validation support  
+**2. Enable required services**
 
-Koushik C
-• Frontend UI component development  
-• Styling and responsiveness using Tailwind CSS  
-• Dark mode implementation  
-• UI testing and improvements  
+- **Authentication** → Enable Email/Password and Google providers
+- **Firestore Database** → Create in production mode
+- **Storage** → Create a default bucket (for profile picture uploads)
 
-Rakesh Gadupudi
-• Routing and navigation using React Router DOM  
-• State management using Context API  
-• Utility functions and TypeScript type definitions  
-• Bug fixing and performance optimization  
+**3. Deploy Firestore security rules**
 
-All team members collaboratively reviewed the application to ensure correctness, usability, and maintainability.
+```bash
+firebase deploy --only firestore:rules
+```
 
+**4. (Optional) Deploy to Firebase Hosting**
 
-License
--------
+```bash
+npm run build
+firebase deploy
+```
 
-MIT License
+---
 
+## 🎯 Usage Guide
 
+| Step | Action                                                            |
+| ---- | ----------------------------------------------------------------- |
+| 1    | Register or log in with Email or Google                           |
+| 2    | Add your income and expense transactions                          |
+| 3    | Set up budgets for your expense categories                        |
+| 4    | Explore the **Dashboard** for a live financial overview           |
+| 5    | Visit **AI Insights** for personalized analysis & recommendations |
+| 6    | Set a **Savings Goal** and track your progress                    |
+| 7    | Browse the **News Feed** to stay on top of financial markets      |
+| 8    | Switch currencies or themes from **Settings**                     |
 
+---
 
+## 👥 Team
+
+| Name                | Contributions                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ganesh Kumatole** | Project ideation & architecture, Firebase setup (Auth & Firestore), Backend integration, Transaction & Budget core logic, AI voice integration, Final integration & coordination |
+| **Vinay Molkeri**   | System architecture documentation, Feature analysis, Repository structuring, Testing & validation                                                                                |
+| **Koushik C**       | Frontend UI component development, Tailwind CSS styling, Dark mode implementation, UI testing                                                                                    |
+| **Rakesh Gadupudi** | Routing & navigation (React Router DOM), Context API state management, TypeScript type definitions, Bug fixes & performance optimization                                         |
+
+---
+
+<div align="center">
+
+Made with ❤️ by Team FinTracker · Built for an era of smarter personal finance.
+
+</div>
