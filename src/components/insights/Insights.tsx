@@ -1,5 +1,6 @@
 import { useInsights } from '@/hooks/useInsights';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatDate } from '@/utils/formatters';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useTheme } from '@/context/ThemeContext';
 import { askFollowUp, FinancialStats } from '@/services/ai/huggingface';
 import {
@@ -72,6 +73,7 @@ const StatCard = ({
 const BudgetRow = ({ category, spentAmount, limitAmount, percentUsed }: {
   category: string; spentAmount: number; limitAmount: number; percentUsed: number;
 }) => {
+  const { formatAmount } = useCurrency();
   const clamped = Math.min(percentUsed, 100);
   const barColor = clamped >= 90 ? 'bg-red-500' : clamped >= 60 ? 'bg-amber-400' : 'bg-emerald-500';
   const textColor = clamped >= 90 ? 'text-red-500' : clamped >= 60 ? 'text-amber-500' : 'text-emerald-500';
@@ -80,8 +82,8 @@ const BudgetRow = ({ category, spentAmount, limitAmount, percentUsed }: {
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium text-text-primary-light dark:text-text-primary-dark">{category}</span>
         <span className={`font-semibold ${textColor}`}>
-          {formatCurrency(spentAmount)}{' '}
-          <span className="text-text-secondary-light dark:text-text-secondary-dark font-normal">/ {formatCurrency(limitAmount)}</span>
+          {formatAmount(spentAmount)}{' '}
+          <span className="text-text-secondary-light dark:text-text-secondary-dark font-normal">/ {formatAmount(limitAmount)}</span>
         </span>
       </div>
       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -185,6 +187,7 @@ const AIChatSection = ({ stats }: { stats: FinancialStats }) => {
 const GOAL_KEY = 'fintracker_savings_goal';
 
 const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
+  const { formatAmount } = useCurrency();
   const [goal, setGoal] = useState<number>(() => {
     const stored = localStorage.getItem(GOAL_KEY);
     return stored ? parseFloat(stored) : 0;
@@ -226,14 +229,14 @@ const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
         <div className="space-y-4">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">{formatCurrency(currentSaved)}</p>
-              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">saved of {formatCurrency(goal)} goal</p>
+              <p className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">{formatAmount(currentSaved)}</p>
+              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">saved of {formatAmount(goal)} goal</p>
             </div>
             <div className="text-right">
               {pct >= 100 ? (
                 <span className="text-emerald-500 font-semibold text-sm">🎉 Goal reached!</span>
               ) : (
-                <span className="text-text-secondary-light dark:text-text-secondary-dark text-sm">{formatCurrency(remaining)} to go</span>
+                <span className="text-text-secondary-light dark:text-text-secondary-dark text-sm">{formatAmount(remaining)} to go</span>
               )}
             </div>
           </div>
@@ -259,7 +262,7 @@ const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
       {editing && (
         <div className="flex flex-col gap-3">
           <label className="text-sm text-text-secondary-light dark:text-text-secondary-dark font-medium">
-            Monthly savings goal ($)
+            Monthly savings goal
           </label>
           <div className="flex gap-2">
             <input
@@ -285,6 +288,7 @@ const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
 export const Insights = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { formatAmount, symbol } = useCurrency();
   const { computed, aiSummary, aiTips, loading, aiLoading, aiError, refreshAI } = useInsights();
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
@@ -349,8 +353,8 @@ export const Insights = () => {
   const baseScaleOpts = { ticks: { color: ct }, grid: { color: cg } };
   const catBarOptions = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx: any) => ` ${formatCurrency(ctx.parsed.y)}` } } },
-    scales: { x: { ...baseScaleOpts, ticks: { ...baseScaleOpts.ticks, font: { size: 11 } } }, y: { ...baseScaleOpts, beginAtZero: true, ticks: { color: ct, callback: (v: any) => `$${v}` } } },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx: any) => ` ${formatAmount(ctx.parsed.y)}` } } },
+    scales: { x: { ...baseScaleOpts, ticks: { ...baseScaleOpts.ticks, font: { size: 11 } } }, y: { ...baseScaleOpts, beginAtZero: true, ticks: { color: ct, callback: (v: any) => `${symbol}${v}` } } },
   };
 
   // ── Budget vs Actual grouped bar chart ──
@@ -364,8 +368,8 @@ export const Insights = () => {
   };
   const bvaOptions = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: ct, boxWidth: 12, padding: 12 } }, tooltip: { callbacks: { label: (ctx: any) => ` ${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}` } } },
-    scales: { x: { ...baseScaleOpts, ticks: { ...baseScaleOpts.ticks, font: { size: 11 } } }, y: { ...baseScaleOpts, beginAtZero: true, ticks: { color: ct, callback: (v: any) => `$${v}` } } },
+    plugins: { legend: { labels: { color: ct, boxWidth: 12, padding: 12 } }, tooltip: { callbacks: { label: (ctx: any) => ` ${ctx.dataset.label}: ${formatAmount(ctx.parsed.y)}` } } },
+    scales: { x: { ...baseScaleOpts, ticks: { ...baseScaleOpts.ticks, font: { size: 11 } } }, y: { ...baseScaleOpts, beginAtZero: true, ticks: { color: ct, callback: (v: any) => `${symbol}${v}` } } },
   };
 
   // ── MoM Trend (sparkline-style line chart, last 6 months) ──
@@ -382,8 +386,8 @@ export const Insights = () => {
   };
   const momLineOptions = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: ct, boxWidth: 12, padding: 12 } }, tooltip: { callbacks: { label: (ctx: any) => ` ${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}` } } },
-    scales: { x: baseScaleOpts, y: { ...baseScaleOpts, beginAtZero: true, ticks: { color: ct, callback: (v: any) => `$${v}` } } },
+    plugins: { legend: { labels: { color: ct, boxWidth: 12, padding: 12 } }, tooltip: { callbacks: { label: (ctx: any) => ` ${ctx.dataset.label}: ${formatAmount(ctx.parsed.y)}` } } },
+    scales: { x: baseScaleOpts, y: { ...baseScaleOpts, beginAtZero: true, ticks: { color: ct, callback: (v: any) => `${symbol}${v}` } } },
   };
 
   // ── Financial stats for AI chat ──
@@ -469,10 +473,10 @@ export const Insights = () => {
 
         {/* ── Row 1: 4 Stat Cards ───────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard id="stat-spending-trend" icon={momIcon} iconColor={monthOverMonthChange !== null && monthOverMonthChange > 0 ? 'text-red-500' : 'text-emerald-500'} label="Spending Trend" value={formatCurrency(currentExpense)} sub={momDisplay} subColor={momColor} />
+          <StatCard id="stat-spending-trend" icon={momIcon} iconColor={monthOverMonthChange !== null && monthOverMonthChange > 0 ? 'text-red-500' : 'text-emerald-500'} label="Spending Trend" value={formatAmount(currentExpense)} sub={momDisplay} subColor={momColor} />
           <StatCard id="stat-savings-rate" icon="savings" iconColor={savingsColor} label="Savings Rate" value={`${savingsRate.toFixed(1)}%`} sub={savingsRate >= 20 ? '🎉 On target' : savingsRate >= 10 ? 'Aim for 20%' : 'Below target'} subColor={savingsColor} />
-          <StatCard id="stat-top-category" icon="category" iconColor="text-purple-500" label="Top Category" value={topCategories[0]?.name ?? '—'} sub={topCategories[0] ? formatCurrency(topCategories[0].amount) : 'No expenses yet'} />
-          <StatCard id="stat-biggest-expense" icon="receipt_long" iconColor="text-orange-500" label="Biggest Expense" value={biggestExpense ? formatCurrency(biggestExpense.amount) : '—'} sub={biggestExpense?.description ?? 'None this month'} />
+          <StatCard id="stat-top-category" icon="category" iconColor="text-purple-500" label="Top Category" value={topCategories[0]?.name ?? '—'} sub={topCategories[0] ? formatAmount(topCategories[0].amount) : 'No expenses yet'} />
+          <StatCard id="stat-biggest-expense" icon="receipt_long" iconColor="text-orange-500" label="Biggest Expense" value={biggestExpense ? formatAmount(biggestExpense.amount) : '—'} sub={biggestExpense?.description ?? 'None this month'} />
         </div>
 
         {/* ── Row 2: Predicted spend + Savings Goal + Weekday/Weekend ──── */}
@@ -483,12 +487,12 @@ export const Insights = () => {
             <SectionTitle icon="timeline">Month-End Projection</SectionTitle>
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">{formatCurrency(projectedMonthlySpend)}</p>
+                <p className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">{formatAmount(projectedMonthlySpend)}</p>
                 <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">projected total by end of month</p>
               </div>
               <div className="text-sm text-text-secondary-light dark:text-text-secondary-dark space-y-1">
-                <p>Spent so far: <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{formatCurrency(currentExpense)}</span></p>
-                <p>Daily rate: <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{formatCurrency(currentExpense / Math.max(daysElapsed, 1))}/day</span></p>
+                <p>Spent so far: <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{formatAmount(currentExpense)}</span></p>
+                <p>Daily rate: <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{formatAmount(currentExpense / Math.max(daysElapsed, 1))}/day</span></p>
                 <p>Days remaining: <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{daysInMonth - daysElapsed}</span></p>
               </div>
               {budgetHealth.length > 0 && (() => {
@@ -497,12 +501,12 @@ export const Insights = () => {
                 return overBy > 0 ? (
                   <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-950/30 rounded-lg px-3 py-2">
                     <span className="material-icons text-sm">warning</span>
-                    At this rate you'll exceed your total budget by {formatCurrency(overBy)}
+                    At this rate you'll exceed your total budget by {formatAmount(overBy)}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/30 rounded-lg px-3 py-2">
                     <span className="material-icons text-sm">check_circle</span>
-                    On track — {formatCurrency(Math.abs(overBy))} under budget limit
+                    On track — {formatAmount(Math.abs(overBy))} under budget limit
                   </div>
                 );
               })()}
@@ -530,7 +534,7 @@ export const Insights = () => {
                       <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
                       <span className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Weekdays</span>
                     </div>
-                    <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{formatCurrency(weekdaySpend)}</p>
+                    <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{formatAmount(weekdaySpend)}</p>
                     <p className="text-xs text-indigo-500 font-medium">{weekdayPct.toFixed(0)}%</p>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -538,7 +542,7 @@ export const Insights = () => {
                       <span className="w-2.5 h-2.5 rounded-full bg-orange-400 flex-shrink-0" />
                       <span className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Weekends</span>
                     </div>
-                    <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{formatCurrency(weekendSpend)}</p>
+                    <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{formatAmount(weekendSpend)}</p>
                     <p className="text-xs text-orange-400 font-medium">{weekendPct.toFixed(0)}%</p>
                   </div>
                 </div>
@@ -660,11 +664,11 @@ export const Insights = () => {
                         <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark truncate">{a.description}</p>
                         <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">{a.category} · {formatDate(a.date)}</p>
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
-                          {a.sigmasAbove.toFixed(1)}× above your avg {formatCurrency(a.categoryAvg)} for this category
+                          {a.sigmasAbove.toFixed(1)}× above your avg {formatAmount(a.categoryAvg)} for this category
                         </p>
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-amber-600 dark:text-amber-400 flex-shrink-0">{formatCurrency(a.amount)}</span>
+                    <span className="text-sm font-bold text-amber-600 dark:text-amber-400 flex-shrink-0">{formatAmount(a.amount)}</span>
                   </div>
                 ))}
               </div>
@@ -683,7 +687,7 @@ export const Insights = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">{recurringExpenses.length} recurring expense{recurringExpenses.length > 1 ? 's' : ''} detected</p>
-                  <span className="text-xs font-semibold px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400">~{formatCurrency(recurringTotal)}/mo total</span>
+                  <span className="text-xs font-semibold px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400">~{formatAmount(recurringTotal)}/mo total</span>
                 </div>
                 {recurringExpenses.slice(0, 5).map((r, i) => (
                   <div key={i} className="flex items-center justify-between gap-3 py-2.5 border-b border-border-light dark:border-border-dark last:border-0">
@@ -694,7 +698,7 @@ export const Insights = () => {
                         <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">{r.category} · seen {r.occurrences}× in last 3 months</p>
                       </div>
                     </div>
-                    <span className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark flex-shrink-0">{formatCurrency(r.amount)}/mo</span>
+                    <span className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark flex-shrink-0">{formatAmount(r.amount)}/mo</span>
                   </div>
                 ))}
               </div>

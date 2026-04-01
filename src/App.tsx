@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { NotificationsProvider } from './context/NotificationsContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import { LandingPage } from './components/auth';
 import { LoginPage } from './components/auth';
 import { SignupPage } from './components/auth';
@@ -20,9 +21,10 @@ function App() {
       <AuthProvider>
         <ToastProvider>
           <NotificationsProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
+            <CurrencyProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route
@@ -74,7 +76,8 @@ function App() {
                   }
                 />
               </Routes>
-            </BrowserRouter>
+              </BrowserRouter>
+            </CurrencyProvider>
           </NotificationsProvider>
         </ToastProvider>
       </AuthProvider>

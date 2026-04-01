@@ -1,11 +1,12 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useBudgets, useTransactions, useNotifications } from '@/hooks';
 import { useToast } from '@/context/ToastContext';
-import { formatCurrency } from '@/utils/formatters';
+import { useCurrency } from '@/context/CurrencyContext';
 import { getBudgetPercentage, shouldNotify } from '@/types/budget';
 import { AddBudgetModal, BudgetDetailsModal } from './index';
 
 export const Budgets = () => {
+  const { formatAmount } = useCurrency();
   const { budgets, loading, createBudget, updateBudget, deleteBudget } =
     useBudgets();
   const { transactions } = useTransactions();
@@ -61,7 +62,7 @@ export const Budgets = () => {
             await createNotification({
               type: percentage > 100 ? 'budget_exceeded' : 'budget_warning',
               title: `Budget Alert: ${budget.category}`,
-              message: `You've used ${percentage}% of your ${budget.category} budget (${formatCurrency(spent)} of ${formatCurrency(budget.limitAmount)})`,
+              message: `You've used ${percentage}% of your ${budget.category} budget (${formatAmount(spent)} of ${formatAmount(budget.limitAmount)})`,
               actionUrl: '/budgets',
               metadata: {
                 budgetId: budget.id,
@@ -176,7 +177,7 @@ export const Budgets = () => {
                 Total Spent:
               </p>
               <p className="text-red-500 font-bold text-lg hidden sm:block">
-                {formatCurrency(totalSpent)}
+                {formatAmount(totalSpent)}
               </p>
             </div>
             <div className="text-right">
@@ -184,13 +185,13 @@ export const Budgets = () => {
                 Remaining:
               </p>
               <p className="text-text-light dark:text-text-dark font-bold text-lg">
-                {formatCurrency(Math.max(monthlyLimit - totalSpent, 0))}
+                {formatAmount(Math.max(monthlyLimit - totalSpent, 0))}
               </p>
             </div>
           </div>
 
           <div className="flex justify-between sm:hidden text-lg font-bold">
-            <span className="text-red-500">{formatCurrency(totalSpent)}</span>
+            <span className="text-red-500">{formatAmount(totalSpent)}</span>
           </div>
 
           <div className="relative pt-1">
@@ -205,7 +206,7 @@ export const Budgets = () => {
                 className={`text-xs font-semibold inline-block ${budgetUsagePercent > 100 ? 'text-red-500' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}
               >
                 {budgetUsagePercent.toFixed(0)}% of{' '}
-                {formatCurrency(monthlyLimit)} Used
+                {formatAmount(monthlyLimit)} Used
               </span>
             </div>
           </div>
@@ -233,7 +234,7 @@ export const Budgets = () => {
               </h3>
               <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                 You have exceeded your monthly budget by{' '}
-                {formatCurrency(Math.max(totalSpent - monthlyLimit, 0))}. Review
+                {formatAmount(Math.max(totalSpent - monthlyLimit, 0))}. Review
                 your spending immediately.
               </p>
             </div>
@@ -314,7 +315,7 @@ export const Budgets = () => {
                         <span
                           className={`font-semibold ${isExceeded ? 'text-red-600 dark:text-red-400' : isNearLimit ? 'text-yellow-600 dark:text-yellow-400' : 'text-text-light dark:text-text-dark'}`}
                         >
-                          {formatCurrency(spent)}
+                          {formatAmount(spent)}
                         </span>
                       </div>
                       <div className="overflow-hidden h-2 rounded-full bg-gray-200 dark:bg-gray-700">
@@ -324,7 +325,7 @@ export const Budgets = () => {
                         ></div>
                       </div>
                       <div className="flex justify-between text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                        <span>{formatCurrency(budget.limitAmount)} limit</span>
+                        <span>{formatAmount(budget.limitAmount)} limit</span>
                         <span
                           className={
                             isExceeded
@@ -361,7 +362,7 @@ export const Budgets = () => {
                             className={`text-xs mt-1 ${isExceeded ? 'text-red-700 dark:text-red-300' : 'text-yellow-700 dark:text-yellow-300'}`}
                           >
                             {isExceeded
-                              ? `Over budget by ${formatCurrency(spent - budget.limitAmount)}`
+                              ? `Over budget by ${formatAmount(spent - budget.limitAmount)}`
                               : `${budget.notificationThreshold - percentage}% remaining until limit`}
                           </p>
                         </div>

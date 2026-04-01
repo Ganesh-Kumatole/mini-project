@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Budget } from '@/types';
-import { formatCurrency } from '@/utils/formatters';
+import { useCurrency } from '@/context/CurrencyContext';
 import { getBudgetPercentage } from '@/types/budget';
 
 type Props = {
@@ -16,6 +16,7 @@ export const BudgetDetailsModal = ({
   budget,
   transactions,
 }: Props) => {
+  const { formatAmount } = useCurrency();
   const budgetTransactions = useMemo(() => {
     if (!budget) return [];
 
@@ -93,7 +94,7 @@ export const BudgetDetailsModal = ({
                     Limit:
                   </span>
                   <span className="font-medium text-text-light dark:text-text-dark">
-                    {formatCurrency(budget.limitAmount)}
+                    {formatAmount(budget.limitAmount)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -103,7 +104,7 @@ export const BudgetDetailsModal = ({
                   <span
                     className={`font-medium ${percentage > 100 ? 'text-red-600 dark:text-red-400' : percentage > budget.notificationThreshold ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}
                   >
-                    {formatCurrency(spent)}
+                    {formatAmount(spent)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -113,7 +114,7 @@ export const BudgetDetailsModal = ({
                   <span
                     className={`font-medium ${budget.limitAmount - spent < 0 ? 'text-red-600 dark:text-red-400' : 'text-text-light dark:text-text-dark'}`}
                   >
-                    {formatCurrency(Math.max(budget.limitAmount - spent, 0))}
+                    {formatAmount(Math.max(budget.limitAmount - spent, 0))}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -159,7 +160,7 @@ export const BudgetDetailsModal = ({
                 className={`text-xs mt-2 ${percentage > 100 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`}
               >
                 {percentage > 100
-                  ? `⚠️ Over budget by ${formatCurrency(spent - budget.limitAmount)}`
+                  ? `⚠️ Over budget by ${formatAmount(spent - budget.limitAmount)}`
                   : `⚠️ Approaching limit - ${budget.notificationThreshold - percentage}% remaining`}
               </p>
             )}
@@ -198,7 +199,7 @@ export const BudgetDetailsModal = ({
                         className={`font-medium ${transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                       >
                         {transaction.type === 'income' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
+                        {formatAmount(transaction.amount)}
                       </span>
                     </div>
                   ))}

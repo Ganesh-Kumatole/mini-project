@@ -1,89 +1,153 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface ToastMessage {
   id: string;
   title: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
-  duration?: number; // milliseconds, 0 = permanent
+  duration?: number; // ms — default 3000, 0 = permanent
 }
 
 interface ToastProps extends ToastMessage {
   onDismiss: (id: string) => void;
 }
 
+// ── Per-type styles ───────────────────────────────────────────────────────────
+
+const STYLES = {
+  success: {
+    icon: 'check_circle',
+    bar: 'bg-emerald-400',
+    iconColor: 'text-emerald-400',
+    ring: 'ring-emerald-500/20',
+    glow: 'shadow-emerald-500/10',
+  },
+  error: {
+    icon: 'error',
+    bar: 'bg-red-400',
+    iconColor: 'text-red-400',
+    ring: 'ring-red-500/20',
+    glow: 'shadow-red-500/10',
+  },
+  warning: {
+    icon: 'warning',
+    bar: 'bg-amber-400',
+    iconColor: 'text-amber-400',
+    ring: 'ring-amber-500/20',
+    glow: 'shadow-amber-500/10',
+  },
+  info: {
+    icon: 'info',
+    bar: 'bg-blue-400',
+    iconColor: 'text-blue-400',
+    ring: 'ring-blue-500/20',
+    glow: 'shadow-blue-500/10',
+  },
+};
+
+// ── Single Toast ──────────────────────────────────────────────────────────────
+
 export const Toast: React.FC<ToastProps> = ({
-  id,
-  title,
-  message,
-  type,
-  duration = 5000,
-  onDismiss,
+  id, title, message, type, duration = 3000, onDismiss,
 }) => {
+  const [visible, setVisible] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [progress, setProgress] = useState(100);
+
+  const s = STYLES[type];
+
+  // Slide in on mount
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // Auto-dismiss + progress bar countdown
   useEffect(() => {
     if (duration === 0) return;
-    const timer = setTimeout(() => onDismiss(id), duration);
-    return () => clearTimeout(timer);
-  }, [id, duration, onDismiss]);
+    const start = Date.now();
+    let frameId: number;
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const pct = Math.max(0, 100 - (elapsed / duration) * 100);
+      setProgress(pct);
+      if (pct > 0) {
+        frameId = requestAnimationFrame(tick);
+      } else {
+        handleDismiss();
+      }
+    };
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [id, duration]);
 
-  const bgColor = {
-    success: 'bg-green-50 dark:bg-green-900/20',
-    error: 'bg-red-50 dark:bg-red-900/20',
-    warning: 'bg-yellow-50 dark:bg-yellow-900/20',
-    info: 'bg-blue-50 dark:bg-blue-900/20',
-  }[type];
-
-  const borderColor = {
-    success: 'border-green-200 dark:border-green-800',
-    error: 'border-red-200 dark:border-red-800',
-    warning: 'border-yellow-200 dark:border-yellow-800',
-    info: 'border-blue-200 dark:border-blue-800',
-  }[type];
-
-  const textColor = {
-    success: 'text-green-800 dark:text-green-200',
-    error: 'text-red-800 dark:text-red-200',
-    warning: 'text-yellow-800 dark:text-yellow-200',
-    info: 'text-blue-800 dark:text-blue-200',
-  }[type];
-
-  const iconMap = {
-    success: 'check_circle',
-    error: 'error',
-    warning: 'warning',
-    info: 'info',
+  const handleDismiss = () => {
+    setLeaving(true);
+    setTimeout(() => onDismiss(id), 300);
   };
 
   return (
     <div
-      className={`${bgColor} border ${borderColor} rounded-lg p-4 mb-4 flex items-start gap-3 ${textColor}`}
+      className={`
+        relative overflow-hidden w-80 max-w-[calc(100vw-2rem)] rounded-2xl
+        bg-white/80 dark:bg-gray-900/80
+        backdrop-blur-xl backdrop-saturate-150
+        ring-1 ${s.ring}
+        shadow-xl ${s.glow}
+        transition-all duration-300 ease-out
+        ${visible && !leaving
+          ? 'opacity-100 translate-x-0 scale-100'
+          : 'opacity-0 translate-x-8 scale-95'}
+      `}
+      role="alert"
+      aria-live="assertive"
     >
-      <span className="material-icons flex-shrink-0 mt-0.5">
-        {iconMap[type]}
-      </span>
-      <div className="flex-1">
-        <h4 className="font-semibold">{title}</h4>
-        <p className="text-sm mt-1">{message}</p>
+      <div className="flex items-start gap-3 p-4">
+        <span className={`material-icons flex-shrink-0 mt-0.5 text-xl ${s.iconColor}`}>
+          {s.icon}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
+            {title}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+            {message}
+          </p>
+        </div>
+        <button
+          onClick={handleDismiss}
+          className="flex-shrink-0 p-0.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Dismiss"
+        >
+          <span className="material-icons text-base">close</span>
+        </button>
       </div>
-      <button
-        onClick={() => onDismiss(id)}
-        className="flex-shrink-0 text-current hover:opacity-70"
-      >
-        <span className="material-icons text-lg">close</span>
-      </button>
+
+      {/* Shrinking progress bar */}
+      {duration > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100 dark:bg-gray-800">
+          <div
+            className={`h-full ${s.bar} transition-none`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
-// Toast container component
-export const ToastContainer: React.FC<{ toasts: ToastMessage[] }> = ({
-  toasts: toastList,
-}) => {
-  return (
-    <div className="fixed top-4 right-4 z-[9999] max-w-md space-y-2">
-      {toastList.map((toast) => (
-        <Toast key={toast.id} {...toast} onDismiss={() => {}} />
-      ))}
-    </div>
-  );
-};
+// ── Container ─────────────────────────────────────────────────────────────────
+
+export const ToastContainer: React.FC<{
+  toasts: ToastMessage[];
+  onDismiss: (id: string) => void;
+}> = ({ toasts, onDismiss }) => (
+  <div
+    className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 items-end"
+    aria-label="Notifications"
+  >
+    {toasts.map((t) => (
+      <Toast key={t.id} {...t} onDismiss={onDismiss} />
+    ))}
+  </div>
+);

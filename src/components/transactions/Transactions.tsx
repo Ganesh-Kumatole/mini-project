@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useTransactions } from '@/hooks';
-import { formatDate, formatCurrency } from '@/utils/formatters';
+import { formatDate } from '@/utils/formatters';
+import { useCurrency } from '@/context/CurrencyContext';
 import { Transaction } from '@/types';
 import AddTransactionModal from './AddTransactionModal';
 import EditTransactionModal from './EditTransactionModal';
 
 export const Transactions = () => {
+  const { formatAmount } = useCurrency();
   const {
     transactions,
     loading,
@@ -375,7 +377,7 @@ export const Transactions = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right text-gray-900 dark:text-gray-100 font-semibold">
-                      {formatCurrency(tx.amount)}
+                      {formatAmount(tx.amount)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span

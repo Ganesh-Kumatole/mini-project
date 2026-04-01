@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useDashboard, useTransactions } from '@/hooks';
-import { formatCurrency } from '@/utils/formatters';
+import { useCurrency } from '@/context/CurrencyContext';
 import { LineChart, DonutChart } from './Charts';
 import { NewsCard } from './NewsCard';
 import { fetchFinancialNews, NewsArticle } from '@/services/news/newsService';
 
 export const Dashboard = () => {
+  const { formatAmount } = useCurrency();
   const { totals, monthly, loading } = useDashboard();
   const { transactions } = useTransactions();
   const [news, setNews] = useState<NewsArticle[]>([]);
@@ -60,7 +61,7 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            {formatCurrency(totals.totalIncome - totals.totalExpense)}
+            {formatAmount(totals.totalIncome - totals.totalExpense)}
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-green-500 flex items-center font-medium">
@@ -90,7 +91,7 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            {formatCurrency(totals.totalIncome)}
+            {formatAmount(totals.totalIncome)}
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-green-500 flex items-center font-medium">
@@ -117,7 +118,7 @@ export const Dashboard = () => {
             </span>
           </div>
           <h3 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-            {formatCurrency(totals.totalExpense)}
+            {formatAmount(totals.totalExpense)}
           </h3>
           <div className="flex items-center text-sm">
             <span className="text-red-500 flex items-center font-medium">
