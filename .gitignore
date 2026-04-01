@@ -28,16 +28,22 @@ mini-project.code-workspace
 
 # Environment variables
 .env
-.env.local
+.env.*
 
 # Firebase service account (NEVER commit this!)
 serviceAccountKey.json
-.env.production
 
 # Firebase
 .firebase/
 .firebaserc.local
+firestore-debug.log
+firebase-debug.log
 
-# Service accounts
-serviceAccountKey.json
+# Temporary/College Documents
+*.pdf
+*.docx
+report-created.pdf
+conference-template-a4.docx
 
+# Custom Scripts
+copy-img.cjs
