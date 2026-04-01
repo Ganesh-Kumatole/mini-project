@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Transaction, UpdateTransactionInput } from '@/types';
+import { getCategoriesForType } from '@/constants/categories';
+import { useCurrency } from '@/context/CurrencyContext';
 
 type Props = {
   isOpen: boolean;
@@ -8,12 +10,9 @@ type Props = {
   onSave: (input: UpdateTransactionInput) => Promise<void>;
 };
 
-export const EditTransactionModal = ({
-  isOpen,
-  onClose,
-  transaction,
-  onSave,
-}: Props) => {
+export const EditTransactionModal = ({ isOpen, onClose, transaction, onSave }: Props) => {
+  const { symbol } = useCurrency();
+
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string>('');
   const [date, setDate] = useState<string>('');
@@ -21,6 +20,7 @@ export const EditTransactionModal = ({
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [recurring, setRecurring] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (transaction && isOpen) {
@@ -30,32 +30,35 @@ export const EditTransactionModal = ({
       setDescription(transaction.description);
       setType(transaction.type);
       setRecurring(false);
+      setError(null);
     }
   }, [transaction, isOpen]);
 
   if (!isOpen || !transaction) return null;
 
+  const categories = getCategoriesForType(type);
+
+  const handleTypeChange = (newType: 'income' | 'expense') => {
+    setType(newType);
+    // Only reset category if the current category doesn't belong to the new type
+    if (!getCategoriesForType(newType).includes(category)) {
+      setCategory('');
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const amt = Number(amount);
-    if (!amt || !category) {
-      alert('Please enter amount and category');
-      return;
-    }
+    if (!amt || amt <= 0) { setError('Please enter a valid amount greater than 0'); return; }
+    if (!category) { setError('Please select a category'); return; }
+    setError(null);
     setSubmitting(true);
     try {
-      await onSave({
-        id: transaction.id,
-        amount: amt,
-        description,
-        category,
-        date: new Date(date),
-        type,
-      });
+      await onSave({ id: transaction.id, amount: amt, description, category, date: new Date(date), type });
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Failed to update transaction');
+      setError('Failed to update transaction. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -65,164 +68,163 @@ export const EditTransactionModal = ({
     <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <form
         onSubmit={handleSubmit}
-        className="bg-surface-light dark:bg-surface-dark w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]"
+        className="bg-surface-light dark:bg-surface-dark w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
+        {/* ── Header ─────────────────────────────────────────────── */}
         <div className="flex justify-between items-center p-6 border-b border-border-light dark:border-border-dark sticky top-0 bg-surface-light dark:bg-surface-dark z-10">
           <div>
-            <h2 className="text-xl font-bold text-text-main-light dark:text-white">
-              Edit Transaction
-            </h2>
-            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
-              Update transaction details below.
-            </p>
+            <h2 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Edit Transaction</h2>
+            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Update the transaction details below.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark transition-colors rounded-full p-1"
+            className="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors rounded-full p-1"
           >
             <span className="material-icons text-xl">close</span>
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto custom-scrollbar space-y-5">
+        {/* ── Body ───────────────────────────────────────────────── */}
+        <div className="p-6 overflow-y-auto space-y-5">
+
+          {/* Error banner */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
+              <span className="material-icons text-red-500 text-base flex-shrink-0">error_outline</span>
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            </div>
+          )}
+
+          {/* Transaction Type */}
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
-              Amount
+            <label className="block text-sm font-semibold mb-2 text-text-primary-light dark:text-text-primary-dark">
+              Transaction Type
             </label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted-light dark:text-gray-400">
-                $
+            <div className="grid grid-cols-2 gap-3">
+              {(['expense', 'income'] as const).map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => handleTypeChange(t)}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border font-medium text-sm transition-all ${
+                    type === t
+                      ? t === 'income'
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : 'bg-red-500 border-red-500 text-white'
+                      : 'border-border-light dark:border-border-dark text-text-secondary-light dark:text-text-secondary-dark hover:border-indigo-400'
+                  }`}
+                >
+                  <span className="material-icons text-base">{t === 'income' ? 'north' : 'south'}</span>
+                  {t === 'income' ? 'Income' : 'Expense'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label className="block text-sm font-semibold mb-1.5 text-text-primary-light dark:text-text-primary-dark">Amount</label>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary-light dark:text-text-secondary-dark font-medium select-none">
+                {symbol}
               </div>
               <input
-                className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm pl-7 py-2.5 transition-all"
+                className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm pl-8 py-2.5 transition-all"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={e => setAmount(e.target.value)}
                 placeholder="0.00"
                 type="number"
                 step="0.01"
+                min="0"
               />
             </div>
           </div>
 
+          {/* Category — filtered by type */}
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
+            <label className="block text-sm font-semibold mb-1.5 text-text-primary-light dark:text-text-primary-dark">
               Category
+              <span className={`ml-2 text-xs font-normal px-1.5 py-0.5 rounded-full ${
+                type === 'income'
+                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+              }`}>
+                {type}
+              </span>
             </label>
             <div className="relative">
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="block w-full appearance-none rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm py-2.5 px-3 pr-10 shadow-sm transition-all cursor-pointer"
+                onChange={e => setCategory(e.target.value)}
+                className="block w-full appearance-none rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm py-2.5 px-3 pr-10 cursor-pointer"
               >
-                <option
-                  value=""
-                  className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  Select a category
-                </option>
-                <option className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  Food &amp; Dining
-                </option>
-                <option className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  Transportation
-                </option>
-                <option className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  Utilities
-                </option>
-                <option className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  Entertainment
-                </option>
-                <option className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  Healthcare
-                </option>
-                <option className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  Misc
-                </option>
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-muted-light dark:text-gray-400">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary-light dark:text-text-secondary-dark">
                 <span className="material-icons text-lg">expand_more</span>
               </div>
             </div>
           </div>
 
+          {/* Date */}
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
-              Date
-            </label>
+            <label className="block text-sm font-semibold mb-1.5 text-text-primary-light dark:text-text-primary-dark">Date</label>
             <input
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm py-2.5 px-3"
+              onChange={e => setDate(e.target.value)}
+              className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm py-2.5 px-3"
               type="date"
             />
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-sm font-semibold mb-1.5 text-text-main-light dark:text-white">
-              Description
+            <label className="block text-sm font-semibold mb-1.5 text-text-primary-light dark:text-text-primary-dark">
+              Description <span className="text-text-secondary-light dark:text-text-secondary-dark font-normal">(optional)</span>
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm py-2.5 px-3 resize-none"
-              rows={3}
+              onChange={e => setDescription(e.target.value)}
+              className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm py-2.5 px-3 resize-none"
+              rows={2}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-text-main-light dark:text-white">
-              Transaction Type
-            </label>
-            <div className="flex items-center space-x-6">
-              <label className="flex items-center gap-2 text-text-main-light dark:text-white cursor-pointer">
-                <input
-                  checked={type === 'income'}
-                  onChange={() => setType('income')}
-                  type="radio"
-                  name="tx-type"
-                />{' '}
-                Income
-              </label>
-              <label className="flex items-center gap-2 text-text-main-light dark:text-white cursor-pointer">
-                <input
-                  checked={type === 'expense'}
-                  onChange={() => setType('expense')}
-                  type="radio"
-                  name="tx-type"
-                />{' '}
-                Expense
-              </label>
+          {/* Recurring toggle */}
+          <label className="flex items-center justify-between cursor-pointer">
+            <div>
+              <span className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">Recurring Transaction</span>
+              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Mark if this repeats monthly</p>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-text-main-light dark:text-white">
-              Recurring Transaction
-            </label>
             <input
               className="toggle-checkbox"
               checked={recurring}
-              onChange={(e) => setRecurring(e.target.checked)}
+              onChange={e => setRecurring(e.target.checked)}
               type="checkbox"
             />
-          </div>
+          </label>
         </div>
 
-        <div className="p-6 border-t border-border-light dark:border-border-dark bg-white dark:bg-gray-800 flex justify-end space-x-3">
+        {/* ── Footer ─────────────────────────────────────────────── */}
+        <div className="p-4 border-t border-border-light dark:border-border-dark flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-text-main-light dark:text-white bg-gray-100 dark:bg-gray-700 border border-border-light dark:border-border-dark rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-text-primary-light dark:text-text-primary-dark bg-gray-100 dark:bg-gray-700 border border-border-light dark:border-border-dark rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Cancel
           </button>
           <button
             disabled={submitting}
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm disabled:opacity-50 transition-colors flex items-center gap-2"
           >
-            {submitting ? 'Saving...' : 'Save Changes'}
+            {submitting && <span className="material-icons text-base animate-spin">refresh</span>}
+            {submitting ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </form>

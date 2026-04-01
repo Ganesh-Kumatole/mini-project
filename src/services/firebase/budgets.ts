@@ -35,18 +35,19 @@ export const updateBudget = async (
   userId: string,
   data: UpdateBudgetInput,
 ): Promise<void> => {
-  const { id, ...updateData } = data;
+  const { id, startDate, endDate, ...rest } = data;
   const docRef = doc(db, 'users', userId, 'budgets', id);
-  await updateDoc(docRef, {
-    ...updateData,
-    startDate: updateData.startDate
-      ? Timestamp.fromDate(updateData.startDate)
-      : undefined,
-    endDate: updateData.endDate
-      ? Timestamp.fromDate(updateData.endDate)
-      : undefined,
-    updatedAt: Timestamp.now(),
-  });
+
+  // Strip undefined values — Firestore rejects them
+  const updateData: Record<string, any> = Object.fromEntries(
+    Object.entries(rest).filter(([, v]) => v !== undefined),
+  );
+
+  if (startDate) updateData.startDate = Timestamp.fromDate(startDate);
+  if (endDate) updateData.endDate = Timestamp.fromDate(endDate);
+  updateData.updatedAt = Timestamp.now();
+
+  await updateDoc(docRef, updateData);
 };
 
 export const deleteBudget = async (

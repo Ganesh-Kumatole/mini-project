@@ -1,337 +1,204 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
+import dashboardPreviewImg from '../../../images/dashboard-preview_landingPage.avif';
 
+// ── Dashboard UI Preview Image ────────────────────────────────────────────────
+const DashboardPreview = () => (
+  <div className="relative w-full max-w-5xl mx-auto mt-16 lg:mt-24 perspective-1000">
+    <div className="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-transparent to-transparent z-10 pointer-events-none" />
+    
+    <div className="relative rounded-2xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_45px_100px_-20px_rgba(0,0,0,0.8)] overflow-hidden transition-transform duration-700 hover:scale-[1.02]">
+      {/* Fake Top Bar (macOS style window controls) */}
+      <div className="absolute top-0 left-0 right-0 flex items-center gap-2 px-4 py-3 bg-gray-50/10 dark:bg-gray-900/10 backdrop-blur-md z-20 border-b border-white/10 dark:border-border-dark/50 pointer-events-none">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm" />
+          <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm" />
+          <div className="w-3 h-3 rounded-full bg-emerald-400 shadow-sm" />
+        </div>
+      </div>
+
+      {/* Actual Dashboard Screenshot Placeholder 
+          (Using the local dashboard preview image from the root images folder) */}
+      <img 
+        src={dashboardPreviewImg}
+        alt="Fintracker Dashboard Live Preview"
+        className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity duration-500"
+        style={{ aspectRatio: '16/9' }}
+      />
+    </div>
+  </div>
+);
+
+// ── Value Props Component ─────────────────────────────────────────────────────
+const ValueProp = ({ title, desc, icon }: { title: string; desc: string; icon: string }) => (
+  <div className="relative p-6 rounded-2xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark group hover:border-indigo-500/50 dark:hover:border-indigo-400/50 transition-colors">
+    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+      <span className="material-icons-outlined text-indigo-600 dark:text-indigo-400 text-2xl">{icon}</span>
+    </div>
+    <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">{title}</h3>
+    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">{desc}</p>
+  </div>
+);
+
+// ── Main Layout ───────────────────────────────────────────────────────────────
 export const LandingPage = () => {
+  const { user } = useAuth();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    if (
-      localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark');
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove('dark');
-      setIsDark(false);
-    }
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDark(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
   }, []);
 
   const toggleTheme = () => {
-    if (document.documentElement.classList.contains('dark')) {
+    if (isDark) {
       document.documentElement.classList.remove('dark');
       localStorage.theme = 'light';
-      setIsDark(false);
     } else {
       document.documentElement.classList.add('dark');
       localStorage.theme = 'dark';
-      setIsDark(true);
     }
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary text-white p-1.5 rounded-lg flex items-center justify-center">
-                <span className="material-icons-round text-xl">
-                  account_balance_wallet
-                </span>
-              </div>
-              <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
-                Fintracker
-              </span>
+    <div className="min-h-screen bg-background-light dark:bg-background-dark selection:bg-indigo-500/30 transition-colors duration-300 flex flex-col overflow-hidden">
+      
+      {/* ── Navbar ─────────────────────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border-light/50 dark:border-border-dark/50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="material-icons-outlined text-white text-base">account_balance_wallet</span>
             </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                onClick={toggleTheme}
+            <span className="font-bold text-lg tracking-tight text-text-primary-light dark:text-text-primary-dark">
+              Fintracker
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-5">
+            <button 
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle theme"
+            >
+              <span className="material-icons-outlined text-xl">{isDark ? 'light_mode' : 'dark_mode'}</span>
+            </button>
+            <div className="h-5 w-px bg-border-light dark:bg-border-dark" />
+            
+            {user ? (
+              <Link 
+                to="/dashboard"
+                className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
               >
-                <span
-                  className={`material-icons-round ${isDark ? 'hidden' : ''}`}
-                >
-                  dark_mode
-                </span>
-                <span
-                  className={`material-icons-round ${isDark ? '' : 'hidden'}`}
-                >
-                  light_mode
-                </span>
-              </button>
-              <Link
-                to="/login"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:border-slate-50 dark:hover:text-white transition-colors px-3 py-2 rounded-lg border border-transparent hover:border-primary"
-              >
-                Log in
+                Go to Workspace →
               </Link>
-            </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
+                  Log in
+                </Link>
+                <Link 
+                  to="/signup"
+                  className="px-4 py-2 rounded-lg bg-text-primary-light dark:bg-text-primary-dark text-background-light dark:text-background-dark text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  Create space
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 lg:pt-10 lg:pb-10 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-primary text-xs font-semibold mb-6 border border-blue-100 dark:border-blue-800">
-                <span className="flex h-2 w-2 rounded-full bg-primary"></span>
-                v2.0 is now live
-              </div>
-              <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
-                Take Control of Your
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-                  {' '}
-                  Finances
-                </span>
-              </h1>
-              <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                Manage transactions, set budgets, track expenses, and gain
-                insights into your spending patterns. Fintracker gives you
-                complete visibility and control over your financial life.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-xl text-white bg-primary hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/25"
-                >
-                  Get Started Now
-                  <span className="material-icons-round ml-2 text-sm">
-                    arrow_forward
-                  </span>
-                </Link>
-              </div>
-            </div>
+      {/* ── Hero Section ───────────────────────────────────────────── */}
+      <main className="flex-1 pt-32 pb-20 px-6 relative z-10 w-full max-w-7xl mx-auto flex flex-col items-center">
+        
+        {/* Background glow effect */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-500/20 dark:bg-indigo-500/10 blur-[120px] rounded-[100%] pointer-events-none -z-10" />
 
-            {/* Dashboard Preview */}
-            <div className="relative lg:h-[600px] w-full flex items-center justify-center">
-              <div className="absolute top-0 right-0 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl -z-10 animate-pulse"></div>
-              <div className="absolute bottom-0 left-10 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl -z-10"></div>
-              <div className="w-full bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                <div className="bg-slate-50 dark:bg-slate-900 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                  </div>
-                </div>
-                <div className="flex h-[300px] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 items-center justify-center">
-                  <div className="text-center">
-                    <span className="material-icons text-6xl text-slate-300 dark:text-slate-600 mb-4">
-                      dashboard
-                    </span>
-                    <p className="text-slate-500 dark:text-slate-400 mt-4">
-                      Dashboard Preview
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section
-        className="py-20 bg-surface-light dark:bg-surface-dark"
-        id="features"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-base font-semibold text-primary tracking-wide uppercase">
-              Features
-            </h2>
-            <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
-              All-in-One Financial Management
-            </p>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-              Powerful tools integrated into one seamless dashboard to give you
-              complete control.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-primary mb-6">
-                <span className="material-icons-outlined text-2xl">
-                  account_balance_wallet
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                Transaction Management
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Track all your income and expenses across multiple categories.
-                Organize transactions with custom tags and easily find spending
-                patterns.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6">
-                <span className="material-icons-outlined text-2xl">
-                  pie_chart
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                Budget Tracking
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Set budgets for each category and monitor your spending in
-                real-time. Get alerts when approaching your budget limits.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400 mb-6">
-                <span className="material-icons-outlined text-2xl">
-                  analytics
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                Smart Insights
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Get AI-powered recommendations to optimize your spending.
-                Visualize your financial health with comprehensive reports and
-                charts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section
-        className="py-20 bg-primary relative overflow-hidden"
-        id="testimonials"
-      >
-        <div className="absolute inset-0 opacity-10">
-          <svg
-            className="h-full w-full"
-            preserveAspectRatio="none"
-            viewBox="0 0 100 100"
-          >
-            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
-          </svg>
-        </div>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <span className="material-icons-round text-6xl text-blue-300 mb-6 block mx-auto opacity-50">
-            format_quote
+        <div className="text-center max-w-3xl border border-gray-400/20 dark:border-gray-500/20 rounded-full px-4 py-1.5 mb-8 inline-flex items-center gap-2 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark font-mono">
+            Personal finance workspace
           </span>
-          <blockquote className="text-2xl md:text-3xl font-medium text-white mb-8 leading-relaxed">
-            "I used to track my expenses in a messy spreadsheet. Fintracker
-            completely changed how I view my money. The automated insights alone
-            saved me over $300 last month."
-          </blockquote>
-          <div className="flex items-center justify-center gap-4">
-            <img
-              alt="Testimonial User"
-              className="w-14 h-14 rounded-full border-2 border-white/20"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtE7X-_WJ6SXjAsoxEaDNPdaNhhSQL2aFKRzqcFo4fCB1ydF0l2E-OQT1wCI6mhm7fN0kkHu2uUlkQgzRkFgiOW7LKX5_5C5FrySfJAupF6c2NDhch4R6dWzzRQtr2JJAaF5xGxGL3Kph1LdlLbvpNvyoYDRBWt5olEUcTEeFq7plSumzYaLxuWrEoiy59_n5qkkvbiwQ8qdgpCAN0-WpCrmfJdP2nTTHeQMUKGSORGDZNsHdL7tg77RoWj7fO4fuOdVMl6AJD4HA"
-            />
-            <div className="text-left">
-              <div className="text-white font-bold text-lg">Alex Johnson</div>
-              <div className="text-blue-200">Freelance Designer</div>
-            </div>
-          </div>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-surface-light dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-primary text-white p-1 rounded flex items-center justify-center">
-                  <span className="material-icons-round text-lg">
-                    account_balance_wallet
-                  </span>
-                </div>
-                <span className="font-bold text-lg text-slate-900 dark:text-white">
-                  Fintracker
-                </span>
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Making personal finance management simple, automated, and
-                intelligent for everyone.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Product
-              </h4>
-              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li>
-                  <a
-                    className="hover:text-primary transition-colors"
-                    href="#features"
-                  >
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Security
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Company
-              </h4>
-              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Legal
-              </h4>
-              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Terms of Service
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              © 2026 Fintracker. All rights reserved.
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark mb-6 leading-[1.1]">
+          Your money, <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">
+            mapped out perfectly.
+          </span>
+        </h1>
+
+        <p className="text-lg md:text-xl text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mb-10 leading-relaxed">
+          An open, secure, and intelligent workspace designed to give you absolute clarity over your income, expenses, and savings goals without the commercial clutter.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Link 
+            to={user ? "/dashboard" : "/signup"}
+            className="px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-base shadow-lg hover:shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 w-full sm:w-auto text-center"
+          >
+            {user ? 'Open Workspace' : 'Start tracking locally'}
+          </Link>
+          <a 
+            href="#features"
+            className="px-8 py-3.5 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark font-medium text-base hover:bg-gray-50 dark:hover:bg-gray-800 transition-all w-full sm:w-auto text-center"
+          >
+            Explore features
+          </a>
+        </div>
+
+        {/* Dashboard Live Mockup */}
+        <DashboardPreview />
+        
+        {/* ── Features Section ──────────────────────────────────────── */}
+        <div id="features" className="w-full mt-32 grid md:grid-cols-3 gap-6">
+          <ValueProp 
+            icon="speed"
+            title="Instant Clarity"
+            desc="No more spreadsheets. View your net balance, monthly burn rate, and savings percentage updated in real-time."
+          />
+          <ValueProp 
+            icon="auto_awesome"
+            title="Intelligent Insights"
+            desc="Our local AI engine automatically parses your spending habits and provides actionable anomalies and warnings without sending data to third parties."
+          />
+          <ValueProp 
+            icon="lock"
+            title="Secure & Private"
+            desc="Built on a robust localized architecture. Your financial tracking environment remains strictly your own."
+          />
+        </div>
+
+      </main>
+
+      {/* ── Footer ─────────────────────────────────────────────────── */}
+      <footer className="border-t border-border-light dark:border-border-dark py-8 px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 opacity-80">
+            <span className="material-icons-outlined text-text-secondary-light dark:text-text-secondary-dark text-lg">code</span>
+            <p className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
+              Built as a personal utility tracker.
             </p>
           </div>
+          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark font-mono bg-surface-light dark:bg-surface-dark px-3 py-1 rounded border border-border-light dark:border-border-dark">
+            Fintracker // {new Date().getFullYear()}
+          </p>
         </div>
       </footer>
+
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { NotificationsProvider } from './context/NotificationsContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LandingPage } from './components/auth';
 import { LoginPage } from './components/auth';
 import { SignupPage } from './components/auth';
@@ -17,7 +18,8 @@ import { ProtectedRoute } from './components/layout';
 
 function App() {
   return (
-    <ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
           <NotificationsProvider>
@@ -25,8 +27,8 @@ function App() {
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
                 <Route
                   path="/dashboard"
                   element={
@@ -82,6 +84,7 @@ function App() {
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -4,6 +4,7 @@ import {
   BudgetPeriod,
   NotificationThreshold,
 } from '@/types';
+import { useCurrency } from '@/context/CurrencyContext';
 
 type Props = {
   isOpen: boolean;
@@ -12,22 +13,23 @@ type Props = {
 };
 
 export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
+  const { symbol } = useCurrency();
   const [category, setCategory] = useState<string>('');
   const [limitAmount, setLimitAmount] = useState<string>('');
   const [period, setPeriod] = useState<BudgetPeriod>('monthly');
   const [notificationThreshold, setNotificationThreshold] =
     useState<NotificationThreshold>(75);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const amount = Number(limitAmount);
-    if (!amount || !category) {
-      alert('Please enter limit amount and category');
-      return;
-    }
+    if (!category) { setError('Please select a category.'); return; }
+    if (!amount || amount <= 0) { setError('Please enter a valid budget limit.'); return; }
+    setError(null);
     setSubmitting(true);
     try {
       const now = new Date();
@@ -66,7 +68,7 @@ export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Failed to create budget');
+      setError('Failed to create budget. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -77,6 +79,7 @@ export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
     setLimitAmount('');
     setPeriod('monthly');
     setNotificationThreshold(75);
+    setError(null);
   };
 
   const handleClose = () => {
@@ -146,8 +149,8 @@ export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
               Budget Limit
             </label>
             <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted-light dark:text-gray-400">
-                $
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted-light dark:text-gray-400 font-medium">
+                {symbol}
               </div>
               <input
                 className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-main-light dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm pl-7 py-2.5 transition-all"
@@ -214,6 +217,14 @@ export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
               ))}
             </div>
           </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+              <span className="material-icons text-red-500 text-base">error</span>
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            </div>
+          )}
         </div>
 
         <div className="p-6 border-t border-border-light dark:border-border-dark bg-white dark:bg-gray-800 flex justify-end space-x-3">

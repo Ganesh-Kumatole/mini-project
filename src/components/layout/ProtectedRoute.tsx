@@ -21,6 +21,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    // Save the page the user was trying to visit so we can redirect after login
+    sessionStorage.setItem('fintracker-return-url', window.location.pathname);
     return <Navigate to="/login" replace />;
   }
 
