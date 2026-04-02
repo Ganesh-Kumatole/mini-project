@@ -1,3 +1,5 @@
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
+
 export interface FinancialStats {
   totalIncome: number;
   totalExpense: number;
@@ -14,7 +16,7 @@ export interface AIInsightsResult {
 }
 
 export const generateFinancialInsights = async (
-  stats: FinancialStats
+  stats: FinancialStats,
 ): Promise<AIInsightsResult> => {
   const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY;
   if (!HF_API_KEY) {
@@ -50,17 +52,20 @@ Respond ONLY with a strictly valid JSON object (no markdown, no explanation outs
   "tips": ["<tip 1>", "<tip 2>", "<tip 3>"]
 }`;
 
-  const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
-    headers: {
-      Authorization: `Bearer ${HF_API_KEY}`,
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    'https://router.huggingface.co/v1/chat/completions',
+    {
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct:together',
+        messages: [{ role: 'user', content: prompt }],
+      }),
     },
-    method: 'POST',
-    body: JSON.stringify({
-      model: 'Qwen/Qwen2.5-7B-Instruct:together',
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
+  );
 
   if (!response.ok) {
     const err = await response.text();
@@ -109,7 +114,7 @@ Respond ONLY with a strictly valid JSON object (no markdown, no explanation outs
 export const askFollowUp = async (
   stats: FinancialStats,
   question: string,
-  conversationHistory: { role: 'user' | 'assistant'; content: string }[] = []
+  conversationHistory: { role: 'user' | 'assistant'; content: string }[] = [],
 ): Promise<string> => {
   const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY;
   if (!HF_API_KEY) throw new Error('Hugging Face API key is missing');
@@ -124,7 +129,7 @@ The user's current financial context (this month):
 - Savings Rate: ${stats.savingsRate.toFixed(1)}%
 - Month-over-month spending change: ${stats.monthOverMonthChange >= 0 ? '+' : ''}${stats.monthOverMonthChange.toFixed(1)}%
 - Top categories: ${topCatText || 'No data'}
-- Budget alerts: ${stats.budgetAlerts.length > 0 ? stats.budgetAlerts.map(b => `${b.category} (${b.percentUsed}% used)`).join(', ') : 'None'}
+- Budget alerts: ${stats.budgetAlerts.length > 0 ? stats.budgetAlerts.map((b) => `${b.category} (${b.percentUsed}% used)`).join(', ') : 'None'}
 
 Answer the user's question concisely in 2-4 sentences. Use plain text, no markdown.`;
 
@@ -134,17 +139,20 @@ Answer the user's question concisely in 2-4 sentences. Use plain text, no markdo
     { role: 'user' as const, content: question },
   ];
 
-  const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
-    headers: {
-      Authorization: `Bearer ${HF_API_KEY}`,
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    'https://router.huggingface.co/v1/chat/completions',
+    {
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct:together',
+        messages,
+      }),
     },
-    method: 'POST',
-    body: JSON.stringify({
-      model: 'Qwen/Qwen2.5-7B-Instruct:together',
-      messages,
-    }),
-  });
+  );
 
   if (!response.ok) {
     const err = await response.text();
@@ -153,7 +161,10 @@ Answer the user's question concisely in 2-4 sentences. Use plain text, no markdo
   }
 
   const result = await response.json();
-  return result.choices?.[0]?.message?.content?.trim() || 'Sorry, I could not generate a response.';
+  return (
+    result.choices?.[0]?.message?.content?.trim() ||
+    'Sorry, I could not generate a response.'
+  );
 };
 
 export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
@@ -169,7 +180,7 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
       headers: { Authorization: `Bearer ${HF_API_KEY}` },
       method: 'POST',
       body: audioBlob,
-    }
+    },
   );
 
   if (!response.ok) {
@@ -189,14 +200,17 @@ export const extractTransactionData = async (text: string) => {
   }
 
   const prompt = `
-  You are a financial assistant. 
-  Extract the transaction details from the following text.
+  You are a financial assistant. Extract the transaction details from the following text based on whether it is an income or an expense.
   Return ONLY a strictly valid JSON object. Do not include any explanation or markdown formatting outside the JSON block.
+  
   Keys to extract:
   - "amount" (number)
-  - "category" (string, choose best match from: "Food & Dining", "Transportation", "Utilities", "Entertainment", "Healthcare", "Misc")
-  - "description" (short string describing the purchase)
   - "type" (string: either "income" or "expense")
+  - "category" (string). 
+    - If type is "expense", YOU MUST choose exactly one from this list: [${EXPENSE_CATEGORIES.join(', ')}].
+    - If type is "income", YOU MUST choose exactly one from this list: [${INCOME_CATEGORIES.join(', ')}].
+  - "description" (short string describing the transaction)
+  
   Text: "${text}"`;
 
   // Sending request directly to HF Router (OpenAI compatible endpoint)
@@ -209,10 +223,10 @@ export const extractTransactionData = async (text: string) => {
       },
       method: 'POST',
       body: JSON.stringify({
-        model: "Qwen/Qwen2.5-7B-Instruct:together",
-        messages: [{ role: 'user', content: prompt }]
+        model: 'Qwen/Qwen2.5-7B-Instruct:together',
+        messages: [{ role: 'user', content: prompt }],
       }),
-    }
+    },
   );
 
   if (!response.ok) {
