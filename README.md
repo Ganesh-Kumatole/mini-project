@@ -190,9 +190,6 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 # HuggingFace (AI features)
 VITE_HUGGINGFACE_API_KEY=hf_your_token_here
-
-# NewsAPI (Financial News)
-VITE_NEWS_API_KEY=your_newsapi_key
 ```
 
 **4. Start the development server**
@@ -248,14 +245,36 @@ firebase deploy
 
 ---
 
-## 👥 Team
+## 🎥 App Demonstration
 
-| Name                | Contributions                                                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ganesh Kumatole** | Project ideation & architecture, Firebase setup (Auth & Firestore), Backend integration, Transaction & Budget core logic, AI voice integration, Final integration & coordination |
-| **Vinay Molkeri**   | System architecture documentation, Feature analysis, Repository structuring, Testing & validation                                                                                |
-| **Koushik C**       | Frontend UI component development, Tailwind CSS styling, Dark mode implementation, UI testing                                                                                    |
-| **Rakesh Gadupudi** | Routing & navigation (React Router DOM), Context API state management, TypeScript type definitions, Bug fixes & performance optimization                                         |
+Watch the complete 2-minute demonstration of the working application here:
+👉 **[Fintracker App Demo Video](./src/assets/videos/fintracker-demo.mp4)**
+
+---
+
+## 👥 Team Information
+
+This repository serves as a unified codebase for two distinct academic course projects. Below are the team members associated with each respective course submission.
+
+
+### Cloud Computing & AI Services Course Team
+
+| Name | Roll Number |
+| :--- | :--- |
+| **Inturi Mokshagna** | 23BCS056 |
+| **Rakesh Gadupudi** | 23BCS049 |
+| **Ganesh Kumatole** | 23BCS050 |
+
+---
+
+### Mini-Project Course Team
+
+| Name | Roll Number |
+| :--- | :--- |
+| **Vinay Molkeri** | 23BCS132 |
+| **Ganesh Kumatole** | 23BCS050 |
+| **Koushik C** | 23BCS073 |
+| **Rakesh Gadupudi** | 23BCS049 |
 
 ---
 

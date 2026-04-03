@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
-import dashboardPreviewImg from '../../../images/dashboard-preview_landingPage.avif';
+import dashboardPreviewImg from '../../assets/images/dashboard-preview_landingPage.avif';
 
 // ── Dashboard UI Preview Image ────────────────────────────────────────────────
 const DashboardPreview = () => (
