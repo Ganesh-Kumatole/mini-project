@@ -2,17 +2,15 @@
 
 # 💰 FinTracker
 
-### A Premium Personal Finance Management Workspace
+### A Personal Finance Management Application
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Firebase](https://img.shields.io/badge/Firebase-10-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
 
-**Track. Analyze. Grow.**  
-_A local-first, privacy-respecting finance tool — not a SaaS product._
+**Track. Analyze. Grow.**
 
 </div>
 
@@ -256,25 +254,24 @@ Watch the complete 2-minute demonstration of the working application here:
 
 This repository serves as a unified codebase for two distinct academic course projects. Below are the team members associated with each respective course submission.
 
-
 ### Cloud Computing & AI Services Course Team
 
-| Name | Roll Number |
-| :--- | :--- |
-| **Inturi Mokshagna** | 23BCS056 |
-| **Rakesh Gadupudi** | 23BCS049 |
-| **Ganesh Kumatole** | 23BCS050 |
+| Name                 | Roll Number |
+| :------------------- | :---------- |
+| **Inturi Mokshagna** | 23BCS056    |
+| **Rakesh Gadupudi**  | 23BCS049    |
+| **Ganesh Kumatole**  | 23BCS050    |
 
 ---
 
 ### Mini-Project Course Team
 
-| Name | Roll Number |
-| :--- | :--- |
-| **Vinay Molkeri** | 23BCS132 |
-| **Ganesh Kumatole** | 23BCS050 |
-| **Koushik C** | 23BCS073 |
-| **Rakesh Gadupudi** | 23BCS049 |
+| Name                | Roll Number |
+| :------------------ | :---------- |
+| **Vinay Molkeri**   | 23BCS132    |
+| **Ganesh Kumatole** | 23BCS050    |
+| **Koushik C**       | 23BCS073    |
+| **Rakesh Gadupudi** | 23BCS049    |
 
 ---
 

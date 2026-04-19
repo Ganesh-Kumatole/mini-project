@@ -41,9 +41,7 @@ firebase-debug.log
 
 # Temporary/College Documents
 *.pdf
-*.docx
-report-created.pdf
-conference-template-a4.docx
+*.pptx
 
 # Custom Scripts
 copy-img.cjs
