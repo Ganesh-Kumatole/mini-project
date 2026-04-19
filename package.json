@@ -1,18 +1,16 @@
 {
-  "name": "fintracker",
-  "private": true,
-  "version": "1.0.0",
+  "name": "finTracker",
+  "description": "A personal finance management application",
+  "entry": "./src/main.tsx",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
     "chart.js": "^4.4.0",
     "firebase": "^10.14.1",
-    "firebase-admin": "^13.6.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "react": "^18.2.0",
