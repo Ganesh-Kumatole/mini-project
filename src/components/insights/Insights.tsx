@@ -1,7 +1,7 @@
 import { useInsights } from '@/hooks/useInsights';
 import { formatDate } from '@/utils/formatters';
-import { useCurrency } from '@/context/CurrencyContext';
-import { useTheme } from '@/context/ThemeContext';
+import { useCurrencyContext } from '@/context/CurrencyContext';
+import { useThemeContext } from '@/context/ThemeContext';
 import { askFollowUp, FinancialStats } from '@/services/ai/huggingface';
 import {
   Chart as ChartJS,
@@ -130,7 +130,7 @@ const BudgetRow = ({
   limitAmount: number;
   percentUsed: number;
 }) => {
-  const { formatAmount } = useCurrency();
+  const { formatAmount } = useCurrencyContext();
   const clamped = Math.min(percentUsed, 100);
   const barColor =
     clamped >= 90
@@ -329,7 +329,7 @@ const AIChatSection = ({ stats }: { stats: FinancialStats }) => {
 const GOAL_KEY = 'fintracker_savings_goal';
 
 const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
-  const { formatAmount, symbol } = useCurrency();
+  const { formatAmount, symbol } = useCurrencyContext();
   const [goal, setGoal] = useState<number>(() => {
     const stored = localStorage.getItem(GOAL_KEY);
     return stored ? parseFloat(stored) : 0;
@@ -452,10 +452,14 @@ const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
               />
             </div>
             <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">
-              Press <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono border border-border-light dark:border-border-dark shadow-sm">Enter</kbd> to save.
+              Press{' '}
+              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono border border-border-light dark:border-border-dark shadow-sm">
+                Enter
+              </kbd>{' '}
+              to save.
             </p>
           </div>
-          
+
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setEditing(false)}
@@ -479,9 +483,9 @@ const SavingsGoalSection = ({ currentSaved }: { currentSaved: number }) => {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export const Insights = () => {
-  const { theme } = useTheme();
+  const { theme } = useThemeContext();
   const isDark = theme === 'dark';
-  const { formatAmount, symbol } = useCurrency();
+  const { formatAmount, symbol } = useCurrencyContext();
   const {
     computed,
     aiSummary,

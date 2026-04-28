@@ -4,7 +4,7 @@ import {
   BudgetPeriod,
   NotificationThreshold,
 } from '@/types';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrencyContext } from '@/context/CurrencyContext';
 
 type Props = {
   isOpen: boolean;
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
-  const { symbol } = useCurrency();
+  const { symbol } = useCurrencyContext();
   const [category, setCategory] = useState<string>('');
   const [limitAmount, setLimitAmount] = useState<string>('');
   const [period, setPeriod] = useState<BudgetPeriod>('monthly');
@@ -27,8 +27,14 @@ export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const amount = Number(limitAmount);
-    if (!category) { setError('Please select a category.'); return; }
-    if (!amount || amount <= 0) { setError('Please enter a valid budget limit.'); return; }
+    if (!category) {
+      setError('Please select a category.');
+      return;
+    }
+    if (!amount || amount <= 0) {
+      setError('Please enter a valid budget limit.');
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -221,7 +227,9 @@ export const AddBudgetModal = ({ isOpen, onClose, onCreate }: Props) => {
           {/* Error banner */}
           {error && (
             <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
-              <span className="material-icons text-red-500 text-base">error</span>
+              <span className="material-icons text-red-500 text-base">
+                error
+              </span>
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}

@@ -9,7 +9,7 @@ import {
 } from '@/services/firebase/notifications';
 import { Notification, CreateNotificationInput } from '@/types';
 
-export const useNotifications = () => {
+const useNotifications = () => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -75,3 +75,5 @@ export const useNotifications = () => {
     markAllAsRead,
   };
 };
+
+export default useNotifications;

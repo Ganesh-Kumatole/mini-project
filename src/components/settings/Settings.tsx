@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
-import { useCurrency, Currency } from '@/context/CurrencyContext';
-import { useToast } from '@/context/ToastContext';
+import { useAuthContext } from '@/context/AuthContext';
+import { useThemeContext } from '@/context/ThemeContext';
+import { useCurrencyContext } from '@/context/CurrencyContext';
+import { Currency } from '@/types/currency';
+import { useToastContext } from '@/context/ToastContext';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useBudgets } from '@/hooks/useBudgets';
 import { logoutUser } from '@/services/firebase/auth';
@@ -18,20 +19,42 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
-const SectionCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6 ${className}`}>
+const SectionCard = ({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={`bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6 ${className}`}
+  >
     {children}
   </div>
 );
 
-const SectionHeader = ({ icon, title, subtitle }: { icon: string; title: string; subtitle?: string }) => (
+const SectionHeader = ({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: string;
+  title: string;
+  subtitle?: string;
+}) => (
   <div className="flex items-start gap-3 mb-6">
     <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex-shrink-0">
       <span className="material-icons text-indigo-500 text-xl">{icon}</span>
     </div>
     <div>
-      <h2 className="text-base font-semibold text-text-primary-light dark:text-text-primary-dark">{title}</h2>
-      {subtitle && <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">{subtitle}</p>}
+      <h2 className="text-base font-semibold text-text-primary-light dark:text-text-primary-dark">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+          {subtitle}
+        </p>
+      )}
     </div>
   </div>
 );
@@ -42,7 +65,10 @@ const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   </label>
 );
 
-const Input = ({ id, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { id: string }) => (
+const Input = ({
+  id,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { id: string }) => (
   <input
     id={id}
     {...props}
@@ -50,18 +76,36 @@ const Input = ({ id, ...props }: React.InputHTMLAttributes<HTMLInputElement> & {
   />
 );
 
-const PrimaryBtn = ({ children, loading, className = '', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { loading?: boolean; className?: string }) => (
+const PrimaryBtn = ({
+  children,
+  loading,
+  className = '',
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  loading?: boolean;
+  className?: string;
+}) => (
   <button
     {...props}
     disabled={props.disabled || loading}
     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
   >
-    {loading && <span className="material-icons text-base animate-spin">refresh</span>}
+    {loading && (
+      <span className="material-icons text-base animate-spin">refresh</span>
+    )}
     {children}
   </button>
 );
 
-const Toggle = ({ checked, onChange, id }: { checked: boolean; onChange: (v: boolean) => void; id: string }) => (
+const Toggle = ({
+  checked,
+  onChange,
+  id,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  id: string;
+}) => (
   <button
     id={id}
     role="switch"
@@ -69,17 +113,39 @@ const Toggle = ({ checked, onChange, id }: { checked: boolean; onChange: (v: boo
     onClick={() => onChange(!checked)}
     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${checked ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}
   >
-    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+    <span
+      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+    />
   </button>
 );
 
-const NotifRow = ({ icon, label, description, checked, onChange, id }: { icon: string; label: string; description: string; checked: boolean; onChange: (v: boolean) => void; id: string }) => (
+const NotifRow = ({
+  icon,
+  label,
+  description,
+  checked,
+  onChange,
+  id,
+}: {
+  icon: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  id: string;
+}) => (
   <div className="flex items-center justify-between gap-4 py-3.5 border-b border-border-light dark:border-border-dark last:border-0">
     <div className="flex items-start gap-3">
-      <span className="material-icons text-indigo-400 text-xl flex-shrink-0 mt-0.5">{icon}</span>
+      <span className="material-icons text-indigo-400 text-xl flex-shrink-0 mt-0.5">
+        {icon}
+      </span>
       <div>
-        <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">{label}</p>
-        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">{description}</p>
+        <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
+          {label}
+        </p>
+        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+          {description}
+        </p>
       </div>
     </div>
     <Toggle checked={checked} onChange={onChange} id={id} />
@@ -95,24 +161,34 @@ type NotifPrefs = typeof defaultNotifPrefs;
 function loadNotifPrefs(): NotifPrefs {
   try {
     const raw = localStorage.getItem(NOTIF_KEY);
-    return raw ? { ...defaultNotifPrefs, ...JSON.parse(raw) } : defaultNotifPrefs;
-  } catch { return defaultNotifPrefs; }
+    return raw
+      ? { ...defaultNotifPrefs, ...JSON.parse(raw) }
+      : defaultNotifPrefs;
+  } catch {
+    return defaultNotifPrefs;
+  }
 }
 
 // ── Avatar initials ───────────────────────────────────────────────────────────
 
 function getInitials(name: string | null | undefined): string {
   if (!name) return '?';
-  return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 }
 
 // ── Settings Component ────────────────────────────────────────────────────────
 
 export const Settings = () => {
-  const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const { currency, setCurrency, exchangeRate, rateLoading, rateError } = useCurrency();
-  const { addToast } = useToast();
+  const { user } = useAuthContext();
+  const { theme, toggleTheme } = useThemeContext();
+  const { currency, setCurrency, exchangeRate, rateLoading, rateError } =
+    useCurrencyContext();
+  const { addToast } = useToastContext();
   const navigate = useNavigate();
   const { transactions } = useTransactions();
   const { budgets } = useBudgets();
@@ -128,11 +204,19 @@ export const Settings = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (!file.type.startsWith('image/')) {
-      addToast({ type: 'error', title: 'Invalid file', message: 'Please select an image file (JPG, PNG, WebP).' });
+      addToast({
+        type: 'error',
+        title: 'Invalid file',
+        message: 'Please select an image file (JPG, PNG, WebP).',
+      });
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      addToast({ type: 'error', title: 'File too large', message: 'Profile picture must be under 2 MB.' });
+      addToast({
+        type: 'error',
+        title: 'File too large',
+        message: 'Profile picture must be under 2 MB.',
+      });
       return;
     }
     setAvatarUploading(true);
@@ -142,9 +226,17 @@ export const Settings = () => {
       await uploadBytes(storageRef, file);
       const photoURL = await getDownloadURL(storageRef);
       await updateProfile(user, { photoURL });
-      addToast({ type: 'success', title: 'Photo updated', message: 'Your profile picture has been saved.' });
+      addToast({
+        type: 'success',
+        title: 'Photo updated',
+        message: 'Your profile picture has been saved.',
+      });
     } catch (err: any) {
-      addToast({ type: 'error', title: 'Upload failed', message: err.message ?? 'Could not upload photo.' });
+      addToast({
+        type: 'error',
+        title: 'Upload failed',
+        message: err.message ?? 'Could not upload photo.',
+      });
     } finally {
       setAvatarUploading(false);
       e.target.value = '';
@@ -165,7 +257,8 @@ export const Settings = () => {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  const isEmailProvider = user?.providerData.some(p => p.providerId === 'password') ?? false;
+  const isEmailProvider =
+    user?.providerData.some((p) => p.providerId === 'password') ?? false;
 
   // ── Profile save ──
   const handleSaveProfile = async () => {
@@ -173,9 +266,17 @@ export const Settings = () => {
     setProfileSaving(true);
     try {
       await updateProfile(user, { displayName: displayName.trim() });
-      addToast({ type: 'success', title: 'Profile updated', message: 'Your display name has been saved.' });
+      addToast({
+        type: 'success',
+        title: 'Profile updated',
+        message: 'Your display name has been saved.',
+      });
     } catch (e: any) {
-      addToast({ type: 'error', title: 'Update failed', message: e.message ?? 'Could not update profile.' });
+      addToast({
+        type: 'error',
+        title: 'Update failed',
+        message: e.message ?? 'Could not update profile.',
+      });
     } finally {
       setProfileSaving(false);
     }
@@ -185,23 +286,45 @@ export const Settings = () => {
   const handleChangePassword = async () => {
     if (!user || !user.email) return;
     if (pwForm.next !== pwForm.confirm) {
-      addToast({ type: 'error', title: 'Passwords do not match', message: 'New password and confirm password must match.' });
+      addToast({
+        type: 'error',
+        title: 'Passwords do not match',
+        message: 'New password and confirm password must match.',
+      });
       return;
     }
     if (pwForm.next.length < 6) {
-      addToast({ type: 'error', title: 'Too short', message: 'Password must be at least 6 characters.' });
+      addToast({
+        type: 'error',
+        title: 'Too short',
+        message: 'Password must be at least 6 characters.',
+      });
       return;
     }
     setPwSaving(true);
     try {
-      const credential = EmailAuthProvider.credential(user.email, pwForm.current);
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        pwForm.current,
+      );
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, pwForm.next);
       setPwForm({ current: '', next: '', confirm: '' });
-      addToast({ type: 'success', title: 'Password changed', message: 'Your password has been updated successfully.' });
+      addToast({
+        type: 'success',
+        title: 'Password changed',
+        message: 'Your password has been updated successfully.',
+      });
     } catch (e: any) {
-      const msg = e.code === 'auth/wrong-password' ? 'Current password is incorrect.' : (e.message ?? 'Could not change password.');
-      addToast({ type: 'error', title: 'Password change failed', message: msg });
+      const msg =
+        e.code === 'auth/wrong-password'
+          ? 'Current password is incorrect.'
+          : (e.message ?? 'Could not change password.');
+      addToast({
+        type: 'error',
+        title: 'Password change failed',
+        message: msg,
+      });
     } finally {
       setPwSaving(false);
     }
@@ -212,18 +335,27 @@ export const Settings = () => {
     const updated = { ...notifPrefs, [key]: value };
     setNotifPrefs(updated);
     localStorage.setItem(NOTIF_KEY, JSON.stringify(updated));
-    addToast({ type: 'success', title: 'Preference saved', message: `${key} ${value ? 'enabled' : 'disabled'}.` });
+    addToast({
+      type: 'success',
+      title: 'Preference saved',
+      message: `${key} ${value ? 'enabled' : 'disabled'}.`,
+    });
   };
 
   // ── CSV export ──
   const handleExportCSV = () => {
     if (transactions.length === 0) {
-      addToast({ type: 'error', title: 'No data', message: 'No transactions to export.' });
+      addToast({
+        type: 'error',
+        title: 'No data',
+        message: 'No transactions to export.',
+      });
       return;
     }
     const header = 'Date,Description,Category,Type,Amount';
-    const rows = transactions.map(t =>
-      `${new Date(t.date).toLocaleDateString()},${JSON.stringify(t.description)},${t.category},${t.type},${t.amount}`
+    const rows = transactions.map(
+      (t) =>
+        `${new Date(t.date).toLocaleDateString()},${JSON.stringify(t.description)},${t.category},${t.type},${t.amount}`,
     );
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -233,20 +365,34 @@ export const Settings = () => {
     a.download = `FinTracker_Transactions_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast({ type: 'success', title: 'Export ready', message: `${transactions.length} transactions exported.` });
+    addToast({
+      type: 'success',
+      title: 'Export ready',
+      message: `${transactions.length} transactions exported.`,
+    });
   };
 
   // ── JSON export ──
   const handleExportJSON = () => {
-    const payload = { exportedAt: new Date().toISOString(), transactions, budgets };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      transactions,
+      budgets,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `FinTracker_Data_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast({ type: 'success', title: 'Export ready', message: 'Full data exported as JSON.' });
+    addToast({
+      type: 'success',
+      title: 'Export ready',
+      message: 'Full data exported as JSON.',
+    });
   };
 
   // ── Sign out ──
@@ -261,13 +407,19 @@ export const Settings = () => {
     setDeleting(true);
     try {
       if (isEmailProvider && user.email) {
-        const credential = EmailAuthProvider.credential(user.email, deletePassword);
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          deletePassword,
+        );
         await reauthenticateWithCredential(user, credential);
       }
       await deleteUser(user);
       navigate('/');
     } catch (e: any) {
-      const msg = e.code === 'auth/wrong-password' ? 'Incorrect password.' : (e.message ?? 'Could not delete account.');
+      const msg =
+        e.code === 'auth/wrong-password'
+          ? 'Incorrect password.'
+          : (e.message ?? 'Could not delete account.');
       addToast({ type: 'error', title: 'Deletion failed', message: msg });
       setDeleting(false);
     }
@@ -275,20 +427,31 @@ export const Settings = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 id="settings-heading" className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">
+      <h1
+        id="settings-heading"
+        className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark"
+      >
         Settings
       </h1>
 
       {/* ── 1. PROFILE ──────────────────────────────────────────────────── */}
       <SectionCard>
-        <SectionHeader icon="person" title="Profile" subtitle="Update your display name visible across the app" />
+        <SectionHeader
+          icon="person"
+          title="Profile"
+          subtitle="Update your display name visible across the app"
+        />
 
         {/* Avatar */}
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-shrink-0 group">
             <div className="h-16 w-16 rounded-full overflow-hidden ring-2 ring-indigo-200 dark:ring-indigo-800 shadow-lg">
               {user?.photoURL ? (
-                <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                <img
+                  src={user.photoURL}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold">
                   {getInitials(user?.displayName)}
@@ -302,9 +465,13 @@ export const Settings = () => {
               title="Change profile picture"
             >
               {avatarUploading ? (
-                <span className="material-icons text-white text-lg animate-spin">refresh</span>
+                <span className="material-icons text-white text-lg animate-spin">
+                  refresh
+                </span>
               ) : (
-                <span className="material-icons text-white text-lg opacity-0 group-hover:opacity-100 transition-opacity">photo_camera</span>
+                <span className="material-icons text-white text-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                  photo_camera
+                </span>
               )}
             </button>
             <input
@@ -320,9 +487,14 @@ export const Settings = () => {
             <p className="font-semibold text-text-primary-light dark:text-text-primary-dark">
               {user?.displayName || 'No name set'}
             </p>
-            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">{user?.email}</p>
+            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+              {user?.email}
+            </p>
             <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
-              Signed in via {user?.providerData[0]?.providerId === 'password' ? 'Email / Password' : 'Google'}
+              Signed in via{' '}
+              {user?.providerData[0]?.providerId === 'password'
+                ? 'Email / Password'
+                : 'Google'}
             </p>
           </div>
         </div>
@@ -334,18 +506,27 @@ export const Settings = () => {
               id="settings-display-name"
               type="text"
               value={displayName}
-              onChange={e => setDisplayName(e.target.value)}
+              onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your full name"
             />
           </div>
           <div>
             <FieldLabel>Email Address</FieldLabel>
-            <Input id="settings-email" type="email" value={user?.email ?? ''} disabled />
+            <Input
+              id="settings-email"
+              type="email"
+              value={user?.email ?? ''}
+              disabled
+            />
             <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
               Email cannot be changed here for security reasons.
             </p>
           </div>
-          <PrimaryBtn id="settings-save-profile" onClick={handleSaveProfile} loading={profileSaving}>
+          <PrimaryBtn
+            id="settings-save-profile"
+            onClick={handleSaveProfile}
+            loading={profileSaving}
+          >
             Save Profile
           </PrimaryBtn>
         </div>
@@ -353,14 +534,22 @@ export const Settings = () => {
 
       {/* ── 2. APPEARANCE ───────────────────────────────────────────────── */}
       <SectionCard>
-        <SectionHeader icon="palette" title="Appearance" subtitle="Customize the look and feel of FinTracker" />
-        <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-3">Theme</p>
+        <SectionHeader
+          icon="palette"
+          title="Appearance"
+          subtitle="Customize the look and feel of FinTracker"
+        />
+        <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-3">
+          Theme
+        </p>
         <div className="grid grid-cols-2 gap-3">
-          {(['light', 'dark'] as const).map(t => (
+          {(['light', 'dark'] as const).map((t) => (
             <button
               key={t}
               id={`settings-theme-${t}`}
-              onClick={() => { if (theme !== t) toggleTheme(); }}
+              onClick={() => {
+                if (theme !== t) toggleTheme();
+              }}
               className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all ${
                 theme === t
                   ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
@@ -370,9 +559,13 @@ export const Settings = () => {
               <span className="material-icons text-xl text-indigo-500">
                 {t === 'light' ? 'light_mode' : 'dark_mode'}
               </span>
-              <span className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark capitalize">{t}</span>
+              <span className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark capitalize">
+                {t}
+              </span>
               {theme === t && (
-                <span className="material-icons text-indigo-500 text-base ml-auto">check_circle</span>
+                <span className="material-icons text-indigo-500 text-base ml-auto">
+                  check_circle
+                </span>
               )}
             </button>
           ))}
@@ -381,15 +574,23 @@ export const Settings = () => {
 
       {/* ── 3. CURRENCY ─────────────────────────────────────────────────── */}
       <SectionCard>
-        <SectionHeader icon="currency_exchange" title="Currency" subtitle="All amounts across the app update instantly" />
+        <SectionHeader
+          icon="currency_exchange"
+          title="Currency"
+          subtitle="All amounts across the app update instantly"
+        />
         <div className="grid grid-cols-2 gap-3 mb-4">
-          {(['INR', 'USD'] as Currency[]).map(c => (
+          {(['INR', 'USD'] as Currency[]).map((c) => (
             <button
               key={c}
               id={`settings-currency-${c.toLowerCase()}`}
               onClick={() => {
                 setCurrency(c);
-                addToast({ type: 'success', title: 'Currency updated', message: `Display currency set to ${c}.` });
+                addToast({
+                  type: 'success',
+                  title: 'Currency updated',
+                  message: `Display currency set to ${c}.`,
+                });
               }}
               className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all ${
                 currency === c
@@ -399,23 +600,31 @@ export const Settings = () => {
             >
               <span className="text-2xl">{c === 'INR' ? '₹' : '$'}</span>
               <div className="text-left">
-                <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">{c}</p>
+                <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                  {c}
+                </p>
                 <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                   {c === 'INR' ? 'Indian Rupee' : 'US Dollar'}
                 </p>
               </div>
               {currency === c && (
-                <span className="material-icons text-indigo-500 text-base ml-auto">check_circle</span>
+                <span className="material-icons text-indigo-500 text-base ml-auto">
+                  check_circle
+                </span>
               )}
             </button>
           ))}
         </div>
-        <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg ${
-          rateError
-            ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400'
-            : 'bg-gray-50 dark:bg-gray-800 text-text-secondary-light dark:text-text-secondary-dark'
-        }`}>
-          <span className={`material-icons text-sm ${rateLoading ? 'animate-spin' : ''}`}>
+        <div
+          className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg ${
+            rateError
+              ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400'
+              : 'bg-gray-50 dark:bg-gray-800 text-text-secondary-light dark:text-text-secondary-dark'
+          }`}
+        >
+          <span
+            className={`material-icons text-sm ${rateLoading ? 'animate-spin' : ''}`}
+          >
             {rateLoading ? 'refresh' : rateError ? 'warning' : 'info'}
           </span>
           {rateLoading
@@ -428,7 +637,11 @@ export const Settings = () => {
 
       {/* ── 4. NOTIFICATIONS ────────────────────────────────────────────── */}
       <SectionCard>
-        <SectionHeader icon="notifications" title="Notifications" subtitle="Control which alerts FinTracker sends you" />
+        <SectionHeader
+          icon="notifications"
+          title="Notifications"
+          subtitle="Control which alerts FinTracker sends you"
+        />
         <div className="divide-y divide-border-light dark:divide-border-dark">
           <NotifRow
             id="notif-budget-alerts"
@@ -436,7 +649,7 @@ export const Settings = () => {
             label="Budget Alerts"
             description="Notify when a budget category reaches its threshold"
             checked={notifPrefs.budgetAlerts}
-            onChange={v => updateNotifPref('budgetAlerts', v)}
+            onChange={(v) => updateNotifPref('budgetAlerts', v)}
           />
           <NotifRow
             id="notif-anomaly"
@@ -444,35 +657,63 @@ export const Settings = () => {
             label="Anomaly Detection"
             description="Alert when a transaction is unusually large for its category"
             checked={notifPrefs.anomalyDetection}
-            onChange={v => updateNotifPref('anomalyDetection', v)}
+            onChange={(v) => updateNotifPref('anomalyDetection', v)}
           />
         </div>
       </SectionCard>
 
       {/* ── 5. SECURITY ─────────────────────────────────────────────────── */}
       <SectionCard>
-        <SectionHeader icon="lock" title="Security" subtitle="Manage your password and active session" />
+        <SectionHeader
+          icon="lock"
+          title="Security"
+          subtitle="Manage your password and active session"
+        />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Account Created', value: user?.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : '—' },
-            { label: 'Last Sign-in', value: user?.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString() : '—' },
-            { label: 'Sign-in Method', value: isEmailProvider ? 'Email / Password' : 'Google OAuth' },
+            {
+              label: 'Account Created',
+              value: user?.metadata.creationTime
+                ? new Date(user.metadata.creationTime).toLocaleDateString()
+                : '—',
+            },
+            {
+              label: 'Last Sign-in',
+              value: user?.metadata.lastSignInTime
+                ? new Date(user.metadata.lastSignInTime).toLocaleDateString()
+                : '—',
+            },
+            {
+              label: 'Sign-in Method',
+              value: isEmailProvider ? 'Email / Password' : 'Google OAuth',
+            },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3">
-              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">{label}</p>
-              <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark mt-0.5">{value}</p>
+            <div
+              key={label}
+              className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3"
+            >
+              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                {label}
+              </p>
+              <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark mt-0.5">
+                {value}
+              </p>
             </div>
           ))}
         </div>
         {isEmailProvider ? (
           <div className="space-y-4">
-            <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Change Password</p>
+            <p className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
+              Change Password
+            </p>
             <Input
               id="settings-pw-current"
               type={showPasswords ? 'text' : 'password'}
               placeholder="Current password"
               value={pwForm.current}
-              onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))}
+              onChange={(e) =>
+                setPwForm((f) => ({ ...f, current: e.target.value }))
+              }
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
@@ -480,34 +721,47 @@ export const Settings = () => {
                 type={showPasswords ? 'text' : 'password'}
                 placeholder="New password"
                 value={pwForm.next}
-                onChange={e => setPwForm(f => ({ ...f, next: e.target.value }))}
+                onChange={(e) =>
+                  setPwForm((f) => ({ ...f, next: e.target.value }))
+                }
               />
               <Input
                 id="settings-pw-confirm"
                 type={showPasswords ? 'text' : 'password'}
                 placeholder="Confirm new password"
                 value={pwForm.confirm}
-                onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
+                onChange={(e) =>
+                  setPwForm((f) => ({ ...f, confirm: e.target.value }))
+                }
               />
             </div>
             <div className="flex items-center gap-4">
-              <PrimaryBtn id="settings-change-password" onClick={handleChangePassword} loading={pwSaving}>
+              <PrimaryBtn
+                id="settings-change-password"
+                onClick={handleChangePassword}
+                loading={pwSaving}
+              >
                 Update Password
               </PrimaryBtn>
               <button
-                onClick={() => setShowPasswords(s => !s)}
+                onClick={() => setShowPasswords((s) => !s)}
                 className="flex items-center gap-1.5 text-xs text-text-secondary-light dark:text-text-secondary-dark hover:text-indigo-500 transition-colors"
               >
-                <span className="material-icons text-sm">{showPasswords ? 'visibility_off' : 'visibility'}</span>
+                <span className="material-icons text-sm">
+                  {showPasswords ? 'visibility_off' : 'visibility'}
+                </span>
                 {showPasswords ? 'Hide' : 'Show'} passwords
               </button>
             </div>
           </div>
         ) : (
           <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3">
-            <span className="material-icons text-blue-500 text-base mt-0.5">info</span>
+            <span className="material-icons text-blue-500 text-base mt-0.5">
+              info
+            </span>
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              You signed in with Google. Password management is handled by your Google account.
+              You signed in with Google. Password management is handled by your
+              Google account.
             </p>
           </div>
         )}
@@ -515,35 +769,52 @@ export const Settings = () => {
 
       {/* ── 6. DATA MANAGEMENT ──────────────────────────────────────────── */}
       <SectionCard>
-        <SectionHeader icon="storage" title="Data Management" subtitle="Export your financial data at any time" />
+        <SectionHeader
+          icon="storage"
+          title="Data Management"
+          subtitle="Export your financial data at any time"
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             id="settings-export-csv"
             onClick={handleExportCSV}
             className="flex items-center gap-3 px-4 py-4 rounded-xl border border-border-light dark:border-border-dark hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group"
           >
-            <span className="material-icons text-2xl text-indigo-500">table_chart</span>
+            <span className="material-icons text-2xl text-indigo-500">
+              table_chart
+            </span>
             <div className="text-left">
-              <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">Export as CSV</p>
+              <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                Export as CSV
+              </p>
               <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                 {transactions.length} transactions · spreadsheet-ready
               </p>
             </div>
-            <span className="material-icons text-gray-400 group-hover:text-indigo-500 text-base ml-auto transition-colors">download</span>
+            <span className="material-icons text-gray-400 group-hover:text-indigo-500 text-base ml-auto transition-colors">
+              download
+            </span>
           </button>
           <button
             id="settings-export-json"
             onClick={handleExportJSON}
             className="flex items-center gap-3 px-4 py-4 rounded-xl border border-border-light dark:border-border-dark hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group"
           >
-            <span className="material-icons text-2xl text-indigo-500">data_object</span>
+            <span className="material-icons text-2xl text-indigo-500">
+              data_object
+            </span>
             <div className="text-left">
-              <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">Export as JSON</p>
+              <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                Export as JSON
+              </p>
               <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                Full data · {transactions.length} transactions + {budgets.length} budgets
+                Full data · {transactions.length} transactions +{' '}
+                {budgets.length} budgets
               </p>
             </div>
-            <span className="material-icons text-gray-400 group-hover:text-indigo-500 text-base ml-auto transition-colors">download</span>
+            <span className="material-icons text-gray-400 group-hover:text-indigo-500 text-base ml-auto transition-colors">
+              download
+            </span>
           </button>
         </div>
       </SectionCard>
@@ -552,11 +823,17 @@ export const Settings = () => {
       <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
         <div className="flex items-start gap-3 mb-6">
           <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/40 flex-shrink-0">
-            <span className="material-icons text-red-500 text-xl">dangerous</span>
+            <span className="material-icons text-red-500 text-xl">
+              dangerous
+            </span>
           </div>
           <div>
-            <h2 className="text-base font-semibold text-red-700 dark:text-red-400">Danger Zone</h2>
-            <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">These actions are permanent and cannot be undone.</p>
+            <h2 className="text-base font-semibold text-red-700 dark:text-red-400">
+              Danger Zone
+            </h2>
+            <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">
+              These actions are permanent and cannot be undone.
+            </p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -584,11 +861,17 @@ export const Settings = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl max-w-md w-full p-6 border border-red-200 dark:border-red-800">
             <div className="flex items-center gap-3 mb-4">
-              <span className="material-icons text-red-500 text-2xl">warning</span>
-              <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Delete Account</h3>
+              <span className="material-icons text-red-500 text-2xl">
+                warning
+              </span>
+              <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
+                Delete Account
+              </h3>
             </div>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">
-              This will permanently delete your account and all associated data (transactions, budgets, preferences). This action <strong>cannot be undone</strong>.
+              This will permanently delete your account and all associated data
+              (transactions, budgets, preferences). This action{' '}
+              <strong>cannot be undone</strong>.
             </p>
             {isEmailProvider && (
               <div className="mb-3">
@@ -598,23 +881,29 @@ export const Settings = () => {
                   type="password"
                   placeholder="Enter your password to confirm"
                   value={deletePassword}
-                  onChange={e => setDeletePassword(e.target.value)}
+                  onChange={(e) => setDeletePassword(e.target.value)}
                 />
               </div>
             )}
             <div className="mb-5">
-              <FieldLabel>Type <strong className="text-red-500">DELETE</strong> to confirm</FieldLabel>
+              <FieldLabel>
+                Type <strong className="text-red-500">DELETE</strong> to confirm
+              </FieldLabel>
               <Input
                 id="delete-confirm-text"
                 type="text"
                 placeholder="DELETE"
                 value={deleteConfirmText}
-                onChange={e => setDeleteConfirmText(e.target.value)}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
               />
             </div>
             <div className="flex gap-3">
               <button
-                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); setDeletePassword(''); }}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmText('');
+                  setDeletePassword('');
+                }}
                 className="flex-1 px-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancel
@@ -622,10 +911,18 @@ export const Settings = () => {
               <button
                 id="delete-confirm-btn"
                 onClick={handleDeleteAccount}
-                disabled={deleteConfirmText !== 'DELETE' || deleting || (isEmailProvider && !deletePassword)}
+                disabled={
+                  deleteConfirmText !== 'DELETE' ||
+                  deleting ||
+                  (isEmailProvider && !deletePassword)
+                }
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {deleting && <span className="material-icons text-base animate-spin">refresh</span>}
+                {deleting && (
+                  <span className="material-icons text-base animate-spin">
+                    refresh
+                  </span>
+                )}
                 {deleting ? 'Deleting…' : 'Delete Forever'}
               </button>
             </div>

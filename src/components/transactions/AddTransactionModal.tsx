@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { CreateTransactionInput } from '@/types';
-import { transcribeAudio, extractTransactionData } from '../../services/ai/huggingface';
+import {
+  transcribeAudio,
+  extractTransactionData,
+} from '../../services/ai/huggingface';
 import { getCategoriesForType } from '@/constants/categories';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrencyContext } from '@/context/CurrencyContext';
 
 type Props = {
   isOpen: boolean;
@@ -11,11 +14,13 @@ type Props = {
 };
 
 export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
-  const { symbol } = useCurrency();
+  const { symbol } = useCurrencyContext();
 
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string>(
+    new Date().toISOString().slice(0, 10),
+  );
   const [description, setDescription] = useState<string>('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [recurring, setRecurring] = useState<boolean>(false);
@@ -62,7 +67,9 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: 'audio/webm',
+        });
         await handleAudioProcessing(audioBlob);
       };
 
@@ -70,7 +77,9 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
       setIsRecording(true);
     } catch (err) {
       console.error('Microphone access denied:', err);
-      setError('Failed to access microphone. Please ensure permissions are granted.');
+      setError(
+        'Failed to access microphone. Please ensure permissions are granted.',
+      );
     }
   };
 
@@ -78,7 +87,9 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
     }
   };
 
@@ -86,7 +97,8 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
     setIsProcessingAI(true);
     try {
       const text = await transcribeAudio(blob);
-      if (!text || text.trim().length === 0) throw new Error('No speech detected.');
+      if (!text || text.trim().length === 0)
+        throw new Error('No speech detected.');
 
       const data = await extractTransactionData(text);
       if (data.amount) setAmount(data.amount.toString());
@@ -95,7 +107,9 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
       if (data.type) setType(data.type as 'income' | 'expense');
     } catch (err: any) {
       console.error('AI Processing failed:', err);
-      setError(`Could not process voice transaction: ${err.message || 'Unknown error'}`);
+      setError(
+        `Could not process voice transaction: ${err.message || 'Unknown error'}`,
+      );
     } finally {
       setIsProcessingAI(false);
     }
@@ -104,12 +118,24 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const amt = Number(amount);
-    if (!amt || amt <= 0) { setError('Please enter a valid amount greater than 0'); return; }
-    if (!category) { setError('Please select a category'); return; }
+    if (!amt || amt <= 0) {
+      setError('Please enter a valid amount greater than 0');
+      return;
+    }
+    if (!category) {
+      setError('Please select a category');
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
-      await onCreate({ amount: amt, description, category, date: new Date(date), type });
+      await onCreate({
+        amount: amt,
+        description,
+        category,
+        date: new Date(date),
+        type,
+      });
       onClose();
     } catch (err) {
       console.error(err);
@@ -138,14 +164,18 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
                   isRecording
                     ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30 animate-pulse'
                     : isProcessingAI
-                    ? 'bg-gray-500/10 text-gray-500 cursor-wait'
-                    : 'bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20'
+                      ? 'bg-gray-500/10 text-gray-500 cursor-wait'
+                      : 'bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20'
                 }`}
               >
                 <span className="material-icons text-base">
                   {isRecording ? 'stop_circle' : 'mic'}
                 </span>
-                {isProcessingAI ? 'Processing…' : isRecording ? 'Recording…' : 'Voice'}
+                {isProcessingAI
+                  ? 'Processing…'
+                  : isRecording
+                    ? 'Recording…'
+                    : 'Voice'}
               </button>
             </h2>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
@@ -163,11 +193,12 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
 
         {/* ── Body ───────────────────────────────────────────────── */}
         <div className="p-6 overflow-y-auto space-y-5">
-
           {/* Error banner */}
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
-              <span className="material-icons text-red-500 text-base flex-shrink-0">error_outline</span>
+              <span className="material-icons text-red-500 text-base flex-shrink-0">
+                error_outline
+              </span>
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
@@ -178,7 +209,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
               Transaction Type
             </label>
             <div className="grid grid-cols-2 gap-3">
-              {(['expense', 'income'] as const).map(t => (
+              {(['expense', 'income'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -212,7 +243,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
               <input
                 className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm pl-8 py-2.5 transition-all"
                 value={amount}
-                onChange={e => setAmount(e.target.value)}
+                onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
                 type="number"
                 step="0.01"
@@ -225,23 +256,27 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           <div>
             <label className="block text-sm font-semibold mb-1.5 text-text-primary-light dark:text-text-primary-dark">
               Category
-              <span className={`ml-2 text-xs font-normal px-1.5 py-0.5 rounded-full ${
-                type === 'income'
-                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                  : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-              }`}>
+              <span
+                className={`ml-2 text-xs font-normal px-1.5 py-0.5 rounded-full ${
+                  type === 'income'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                }`}
+              >
                 {type}
               </span>
             </label>
             <div className="relative">
               <select
                 value={category}
-                onChange={e => setCategory(e.target.value)}
+                onChange={(e) => setCategory(e.target.value)}
                 className="block w-full appearance-none rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm py-2.5 px-3 pr-10 cursor-pointer"
               >
                 <option value="">Select a category</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary-light dark:text-text-secondary-dark">
@@ -257,7 +292,7 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
             </label>
             <input
               value={date}
-              onChange={e => setDate(e.target.value)}
+              onChange={(e) => setDate(e.target.value)}
               className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm py-2.5 px-3"
               type="date"
             />
@@ -266,11 +301,14 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold mb-1.5 text-text-primary-light dark:text-text-primary-dark">
-              Description <span className="text-text-secondary-light dark:text-text-secondary-dark font-normal">(optional)</span>
+              Description{' '}
+              <span className="text-text-secondary-light dark:text-text-secondary-dark font-normal">
+                (optional)
+              </span>
             </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               className="block w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-700 text-text-primary-light dark:text-text-primary-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm py-2.5 px-3 resize-none"
               placeholder="What was this transaction for?"
               rows={2}
@@ -280,13 +318,17 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
           {/* Recurring */}
           <label className="flex items-center justify-between cursor-pointer">
             <div>
-              <span className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">Recurring Transaction</span>
-              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Mark if this repeats monthly</p>
+              <span className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                Recurring Transaction
+              </span>
+              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                Mark if this repeats monthly
+              </p>
             </div>
             <input
               className="toggle-checkbox"
               checked={recurring}
-              onChange={e => setRecurring(e.target.checked)}
+              onChange={(e) => setRecurring(e.target.checked)}
               type="checkbox"
             />
           </label>
@@ -306,7 +348,11 @@ export const AddTransactionModal = ({ isOpen, onClose, onCreate }: Props) => {
             type="submit"
             className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm disabled:opacity-50 transition-colors flex items-center gap-2"
           >
-            {submitting && <span className="material-icons text-base animate-spin">refresh</span>}
+            {submitting && (
+              <span className="material-icons text-base animate-spin">
+                refresh
+              </span>
+            )}
             {submitting ? 'Adding…' : 'Add Transaction'}
           </button>
         </div>

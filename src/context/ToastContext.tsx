@@ -1,26 +1,14 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { ToastMessage, ToastContainer } from '@/components/common/Toast';
+import { createContext, useContext, ReactNode } from 'react';
+import { ToastContainer } from '@/components/common/Toast';
+import { ToastContextType } from '@/types/toast';
+import useToast from '@/hooks/useToast';
 
-interface ToastContextType {
-  addToast: (toast: Omit<ToastMessage, 'id'>) => void;
-  removeToast: (id: string) => void;
-}
-
+// define context
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-  const addToast = useCallback((toast: Omit<ToastMessage, 'id'>) => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { ...toast, id }]);
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+// provide context
+const ToastProvider = ({ children }: { children: ReactNode }) => {
+  const { toasts, addToast, removeToast } = useToast();
 
   return (
     <ToastContext.Provider value={{ addToast, removeToast }}>
@@ -30,10 +18,15 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
+// consume context
+const useToastContext = () => {
+  const contextVal = useContext(ToastContext);
+
+  if (!contextVal) {
+    throw new Error('useToastContext must be used within ToastProvider');
   }
-  return context;
+
+  return contextVal;
 };
+
+export { ToastProvider, useToastContext };

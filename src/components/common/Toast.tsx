@@ -1,54 +1,15 @@
 import { useEffect, useState } from 'react';
-
-export interface ToastMessage {
-  id: string;
-  title: string;
-  message: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  duration?: number; // ms — default 3000, 0 = permanent
-}
-
-interface ToastProps extends ToastMessage {
-  onDismiss: (id: string) => void;
-}
-
-// ── Per-type styles ───────────────────────────────────────────────────────────
-
-const STYLES = {
-  success: {
-    icon: 'check_circle',
-    bar: 'bg-emerald-400',
-    iconColor: 'text-emerald-400',
-    ring: 'ring-emerald-500/20',
-    glow: 'shadow-emerald-500/10',
-  },
-  error: {
-    icon: 'error',
-    bar: 'bg-red-400',
-    iconColor: 'text-red-400',
-    ring: 'ring-red-500/20',
-    glow: 'shadow-red-500/10',
-  },
-  warning: {
-    icon: 'warning',
-    bar: 'bg-amber-400',
-    iconColor: 'text-amber-400',
-    ring: 'ring-amber-500/20',
-    glow: 'shadow-amber-500/10',
-  },
-  info: {
-    icon: 'info',
-    bar: 'bg-blue-400',
-    iconColor: 'text-blue-400',
-    ring: 'ring-blue-500/20',
-    glow: 'shadow-blue-500/10',
-  },
-};
+import { ToastMessageType, ToastPropsType } from '@/types/toast';
+import { STYLES } from '@/utils';
 
 // ── Single Toast ──────────────────────────────────────────────────────────────
-
-export const Toast: React.FC<ToastProps> = ({
-  id, title, message, type, duration = 3000, onDismiss,
+export const Toast: React.FC<ToastPropsType> = ({
+  id,
+  title,
+  message,
+  type,
+  duration = 3000,
+  onDismiss,
 }) => {
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -95,15 +56,19 @@ export const Toast: React.FC<ToastProps> = ({
         ring-1 ${s.ring}
         shadow-xl ${s.glow}
         transition-all duration-300 ease-out
-        ${visible && !leaving
-          ? 'opacity-100 translate-x-0 scale-100'
-          : 'opacity-0 translate-x-8 scale-95'}
+        ${
+          visible && !leaving
+            ? 'opacity-100 translate-x-0 scale-100'
+            : 'opacity-0 translate-x-8 scale-95'
+        }
       `}
       role="alert"
       aria-live="assertive"
     >
       <div className="flex items-start gap-3 p-4">
-        <span className={`material-icons flex-shrink-0 mt-0.5 text-xl ${s.iconColor}`}>
+        <span
+          className={`material-icons flex-shrink-0 mt-0.5 text-xl ${s.iconColor}`}
+        >
           {s.icon}
         </span>
         <div className="flex-1 min-w-0">
@@ -137,9 +102,8 @@ export const Toast: React.FC<ToastProps> = ({
 };
 
 // ── Container ─────────────────────────────────────────────────────────────────
-
 export const ToastContainer: React.FC<{
-  toasts: ToastMessage[];
+  toasts: ToastMessageType[];
   onDismiss: (id: string) => void;
 }> = ({ toasts, onDismiss }) => (
   <div

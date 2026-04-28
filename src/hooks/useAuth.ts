@@ -1,7 +1,7 @@
-import { useAuth as useAuthContext } from '@/context/AuthContext';
+import { useAuthContext } from '@/context/AuthContext';
 import { logoutUser } from '@/services/firebase/auth';
 
-export const useAuth = () => {
+const useAuth = () => {
   const { user, loading } = useAuthContext();
 
   const logout = async () => {
@@ -15,3 +15,5 @@ export const useAuth = () => {
     isAuthenticated: !!user,
   };
 };
+
+export { useAuth };

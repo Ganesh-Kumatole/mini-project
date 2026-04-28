@@ -27,3 +27,13 @@ export interface CreateNotificationInput {
   actionUrl?: string;
   metadata?: Notification['metadata'];
 }
+
+export interface NotificationsContextType {
+  notifications: Notification[];
+  unreadCount: number;
+  loading: boolean;
+  createNotification: (input: CreateNotificationInput) => Promise<string>;
+  markAsRead: (id: string) => Promise<void>;
+  dismiss: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+}

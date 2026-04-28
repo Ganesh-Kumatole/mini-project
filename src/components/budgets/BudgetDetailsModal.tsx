@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Budget } from '@/types';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrencyContext } from '@/context/CurrencyContext';
 import { getBudgetPercentage } from '@/types/budget';
 
 type Props = {
@@ -16,7 +16,7 @@ export const BudgetDetailsModal = ({
   budget,
   transactions,
 }: Props) => {
-  const { formatAmount } = useCurrency();
+  const { formatAmount } = useCurrencyContext();
   const budgetTransactions = useMemo(() => {
     if (!budget) return [];
 

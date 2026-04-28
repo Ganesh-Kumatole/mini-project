@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTransactions } from '@/hooks';
 import { formatDate } from '@/utils/formatters';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrencyContext } from '@/context/CurrencyContext';
 import { Transaction } from '@/types';
 import AddTransactionModal from './AddTransactionModal';
 import EditTransactionModal from './EditTransactionModal';
@@ -12,25 +12,43 @@ type SortDir = 'asc' | 'desc';
 
 // ── Styled Confirm Modal ───────────────────────────────────────────────────────
 const ConfirmModal = ({
-  isOpen, count, onConfirm, onCancel, loading,
-}: { isOpen: boolean; count: number; onConfirm: () => void; onCancel: () => void; loading: boolean }) => {
+  isOpen,
+  count,
+  onConfirm,
+  onCancel,
+  loading,
+}: {
+  isOpen: boolean;
+  count: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading: boolean;
+}) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-red-200 dark:border-red-800 animate-[fadeIn_0.15s_ease]">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/40">
-            <span className="material-icons text-red-500 text-xl">delete_forever</span>
+            <span className="material-icons text-red-500 text-xl">
+              delete_forever
+            </span>
           </div>
           <div>
             <h3 className="text-base font-bold text-text-primary-light dark:text-text-primary-dark">
               Delete {count} Transaction{count !== 1 ? 's' : ''}?
             </h3>
-            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">This action cannot be undone</p>
+            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+              This action cannot be undone
+            </p>
           </div>
         </div>
         <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-5">
-          You are about to permanently delete <span className="font-semibold text-red-600 dark:text-red-400">{count} transaction{count !== 1 ? 's' : ''}</span>. All associated data will be lost.
+          You are about to permanently delete{' '}
+          <span className="font-semibold text-red-600 dark:text-red-400">
+            {count} transaction{count !== 1 ? 's' : ''}
+          </span>
+          . All associated data will be lost.
         </p>
         <div className="flex gap-3">
           <button
@@ -45,7 +63,11 @@ const ConfirmModal = ({
             disabled={loading}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
           >
-            {loading && <span className="material-icons text-base animate-spin">refresh</span>}
+            {loading && (
+              <span className="material-icons text-base animate-spin">
+                refresh
+              </span>
+            )}
             {loading ? 'Deleting…' : 'Delete'}
           </button>
         </div>
@@ -56,8 +78,20 @@ const ConfirmModal = ({
 
 // ── Sort Header Button ─────────────────────────────────────────────────────────
 const SortTh = ({
-  label, sortKey, currentKey, dir, onSort, className = '',
-}: { label: string; sortKey: SortKey; currentKey: SortKey; dir: SortDir; onSort: (k: SortKey) => void; className?: string }) => {
+  label,
+  sortKey,
+  currentKey,
+  dir,
+  onSort,
+  className = '',
+}: {
+  label: string;
+  sortKey: SortKey;
+  currentKey: SortKey;
+  dir: SortDir;
+  onSort: (k: SortKey) => void;
+  className?: string;
+}) => {
   const active = currentKey === sortKey;
   return (
     <th
@@ -66,7 +100,9 @@ const SortTh = ({
     >
       <span className="inline-flex items-center gap-1">
         {label}
-        <span className={`material-icons text-sm transition-colors ${active ? 'text-indigo-500' : 'text-gray-400 opacity-0 group-hover:opacity-100'}`}>
+        <span
+          className={`material-icons text-sm transition-colors ${active ? 'text-indigo-500' : 'text-gray-400 opacity-0 group-hover:opacity-100'}`}
+        >
           {active && dir === 'asc' ? 'arrow_upward' : 'arrow_downward'}
         </span>
       </span>
@@ -75,7 +111,13 @@ const SortTh = ({
 };
 
 // ── Empty State ────────────────────────────────────────────────────────────────
-const EmptyState = ({ filtersActive, onClear }: { filtersActive: boolean; onClear: () => void }) => (
+const EmptyState = ({
+  filtersActive,
+  onClear,
+}: {
+  filtersActive: boolean;
+  onClear: () => void;
+}) => (
   <tr>
     <td colSpan={7}>
       <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
@@ -86,7 +128,9 @@ const EmptyState = ({ filtersActive, onClear }: { filtersActive: boolean; onClea
         </div>
         <div className="text-center">
           <p className="font-semibold text-text-primary-light dark:text-text-primary-dark">
-            {filtersActive ? 'No results match your filters' : 'No transactions yet'}
+            {filtersActive
+              ? 'No results match your filters'
+              : 'No transactions yet'}
           </p>
           <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
             {filtersActive
@@ -111,12 +155,21 @@ const EmptyState = ({ filtersActive, onClear }: { filtersActive: boolean; onClea
 // ── Pagination Control ─────────────────────────────────────────────────────────
 const PAGE_SIZE = 25;
 
-const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) => {
+const Pagination = ({
+  page,
+  totalPages,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  onChange: (p: number) => void;
+}) => {
   if (totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t border-border-light dark:border-border-dark">
       <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
-        Page <span className="font-semibold">{page}</span> of <span className="font-semibold">{totalPages}</span>
+        Page <span className="font-semibold">{page}</span> of{' '}
+        <span className="font-semibold">{totalPages}</span>
       </p>
       <div className="flex items-center gap-2">
         <button
@@ -160,23 +213,38 @@ const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: 
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export const Transactions = () => {
-  const { formatAmount } = useCurrency();
-  const { transactions, loading, error, createTransaction, updateTransaction, deleteTransaction } = useTransactions();
+  const { formatAmount } = useCurrencyContext();
+  const {
+    transactions,
+    loading,
+    error,
+    createTransaction,
+    updateTransaction,
+    deleteTransaction,
+  } = useTransactions();
 
   // ── Modal state ──
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ ids: Set<string>; single?: string } | null>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    ids: Set<string>;
+    single?: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   // ── Filters ──
   const [searchText, setSearchText] = useState('');
-  const [selectedType, setSelectedType] = useState<'all' | 'income' | 'expense'>('all');
+  const [selectedType, setSelectedType] = useState<
+    'all' | 'income' | 'expense'
+  >('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [dateFromFilter, setDateFromFilter] = useState<string>('');
   const [dateToFilter, setDateToFilter] = useState<string>('');
-  const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(new Set());
+  const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(
+    new Set(),
+  );
   const [selectAll, setSelectAll] = useState(false);
 
   // ── Sorting ──
@@ -186,36 +254,64 @@ export const Transactions = () => {
   // ── Pagination ──
   const [page, setPage] = useState(1);
 
-  const hasActiveFilters = !!(searchText || selectedType !== 'all' || selectedCategory !== 'all' || dateFromFilter || dateToFilter);
+  const hasActiveFilters = !!(
+    searchText ||
+    selectedType !== 'all' ||
+    selectedCategory !== 'all' ||
+    dateFromFilter ||
+    dateToFilter
+  );
 
   // ── Categories unique list ──
-  const categories = useMemo(() =>
-    Array.from(new Set(transactions.map((t) => t.category))).sort(), [transactions]);
+  const categories = useMemo(
+    () => Array.from(new Set(transactions.map((t) => t.category))).sort(),
+    [transactions],
+  );
 
   // ── Filtered list ──
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
       if (searchText) {
         const q = searchText.toLowerCase();
-        if (!t.description.toLowerCase().includes(q) && !t.amount.toString().includes(q) && !t.category.toLowerCase().includes(q)) return false;
+        if (
+          !t.description.toLowerCase().includes(q) &&
+          !t.amount.toString().includes(q) &&
+          !t.category.toLowerCase().includes(q)
+        )
+          return false;
       }
       if (selectedType !== 'all' && t.type !== selectedType) return false;
-      if (selectedCategory !== 'all' && t.category !== selectedCategory) return false;
+      if (selectedCategory !== 'all' && t.category !== selectedCategory)
+        return false;
       const d = new Date(t.date);
       if (dateFromFilter && d < new Date(dateFromFilter)) return false;
-      if (dateToFilter) { const to = new Date(dateToFilter); to.setHours(23,59,59,999); if (d > to) return false; }
+      if (dateToFilter) {
+        const to = new Date(dateToFilter);
+        to.setHours(23, 59, 59, 999);
+        if (d > to) return false;
+      }
       return true;
     });
-  }, [transactions, searchText, selectedType, selectedCategory, dateFromFilter, dateToFilter]);
+  }, [
+    transactions,
+    searchText,
+    selectedType,
+    selectedCategory,
+    dateFromFilter,
+    dateToFilter,
+  ]);
 
   // ── Sorted list ──
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
       let cmp = 0;
-      if (sortKey === 'date') cmp = new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (sortKey === 'date')
+        cmp = new Date(a.date).getTime() - new Date(b.date).getTime();
       else if (sortKey === 'amount') cmp = a.amount - b.amount;
-      else if (sortKey === 'description') cmp = a.description.localeCompare(b.description);
-      else if (sortKey === 'category') cmp = a.category.localeCompare(b.category);
+      else if (sortKey === 'description')
+        cmp = a.description.localeCompare(b.description);
+      else if (sortKey === 'category')
+        cmp = a.category.localeCompare(b.category);
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [filtered, sortKey, sortDir]);
@@ -227,7 +323,7 @@ export const Transactions = () => {
   // ── Handler: toggle sort ──
   const handleSort = (key: SortKey) => {
     if (key === sortKey) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortKey(key);
       setSortDir('desc');
@@ -243,8 +339,13 @@ export const Transactions = () => {
     setSelectAll(false);
   };
   const handleSelectAll = () => {
-    if (selectAll) { setSelectedTransactions(new Set()); setSelectAll(false); }
-    else { setSelectedTransactions(new Set(filtered.map(t => t.id))); setSelectAll(true); }
+    if (selectAll) {
+      setSelectedTransactions(new Set());
+      setSelectAll(false);
+    } else {
+      setSelectedTransactions(new Set(filtered.map((t) => t.id)));
+      setSelectAll(true);
+    }
   };
 
   // ── Handlers: delete flow ──
@@ -263,19 +364,35 @@ export const Transactions = () => {
       setSelectedTransactions(new Set());
       setSelectAll(false);
       setConfirmDelete(null);
-    } catch (e) { console.error(e); } finally { setDeleting(false); }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // ── Handlers: edit ──
-  const handleEditClick = (tx: Transaction) => { setEditingTransaction(tx); setShowEdit(true); };
-  const handleEditClose = () => { setShowEdit(false); setEditingTransaction(null); };
-  const handleEditSave = async (input: any) => { await updateTransaction(input); };
+  const handleEditClick = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setShowEdit(true);
+  };
+  const handleEditClose = () => {
+    setShowEdit(false);
+    setEditingTransaction(null);
+  };
+  const handleEditSave = async (input: any) => {
+    await updateTransaction(input);
+  };
 
   // ── Handler: reset ──
   const handleResetFilters = () => {
-    setSearchText(''); setSelectedType('all'); setSelectedCategory('all');
-    setDateFromFilter(''); setDateToFilter('');
-    setSelectedTransactions(new Set()); setSelectAll(false);
+    setSearchText('');
+    setSelectedType('all');
+    setSelectedCategory('all');
+    setDateFromFilter('');
+    setDateToFilter('');
+    setSelectedTransactions(new Set());
+    setSelectAll(false);
     setPage(1);
   };
 
@@ -283,7 +400,9 @@ export const Transactions = () => {
     <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">Transactions</h1>
+        <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">
+          Transactions
+        </h1>
         <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm mt-1">
           {transactions.length > 0
             ? `${transactions.length} total · ${filtered.length} shown`
@@ -296,13 +415,18 @@ export const Transactions = () => {
         <div className="p-5 border-b border-border-light dark:border-border-dark space-y-4">
           {/* Search */}
           <div className="relative">
-            <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
+            <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
+              search
+            </span>
             <input
               className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all"
               placeholder="Search by description, category, or amount…"
               type="text"
               value={searchText}
-              onChange={(e) => { setSearchText(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
 
@@ -314,7 +438,10 @@ export const Transactions = () => {
                   <input
                     type="date"
                     value={dateFromFilter}
-                    onChange={(e) => { setDateFromFilter(e.target.value); setPage(1); }}
+                    onChange={(e) => {
+                      setDateFromFilter(e.target.value);
+                      setPage(1);
+                    }}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
                     title="From Date"
                   />
@@ -324,7 +451,10 @@ export const Transactions = () => {
                   <input
                     type="date"
                     value={dateToFilter}
-                    onChange={(e) => { setDateToFilter(e.target.value); setPage(1); }}
+                    onChange={(e) => {
+                      setDateToFilter(e.target.value);
+                      setPage(1);
+                    }}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
                     title="To Date"
                   />
@@ -332,11 +462,18 @@ export const Transactions = () => {
               </div>
               <select
                 value={selectedCategory}
-                onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setPage(1);
+                }}
                 className="px-3 py-2 bg-white dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent w-full sm:w-auto"
               >
                 <option value="all">All Categories</option>
-                {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -347,14 +484,21 @@ export const Transactions = () => {
                 {(['all', 'income', 'expense'] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() => { setSelectedType(t); setPage(1); }}
+                    onClick={() => {
+                      setSelectedType(t);
+                      setPage(1);
+                    }}
                     className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md capitalize transition-all ${
                       selectedType === t
                         ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    {t === 'all' ? 'All' : t === 'income' ? '↑ Income' : '↓ Expense'}
+                    {t === 'all'
+                      ? 'All'
+                      : t === 'income'
+                        ? '↑ Income'
+                        : '↓ Expense'}
                   </button>
                 ))}
               </div>
@@ -366,7 +510,9 @@ export const Transactions = () => {
                     onClick={handleResetFilters}
                     className="flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <span className="material-icons-outlined text-base">filter_alt_off</span>
+                    <span className="material-icons-outlined text-base">
+                      filter_alt_off
+                    </span>
                     <span className="hidden sm:inline">Clear</span>
                   </button>
                 )}
@@ -379,9 +525,13 @@ export const Transactions = () => {
                       : 'border-red-300 dark:border-red-700/50 text-white bg-red-600 hover:bg-red-700 shadow-sm'
                   }`}
                 >
-                  <span className="material-icons-outlined text-base">delete_outline</span>
+                  <span className="material-icons-outlined text-base">
+                    delete_outline
+                  </span>
                   {selectedTransactions.size > 0 && (
-                    <span className="font-semibold">{selectedTransactions.size}</span>
+                    <span className="font-semibold">
+                      {selectedTransactions.size}
+                    </span>
                   )}
                 </button>
                 <button
@@ -409,10 +559,35 @@ export const Transactions = () => {
                     className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 accent-indigo-600 cursor-pointer"
                   />
                 </th>
-                <SortTh label="Date" sortKey="date" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
-                <SortTh label="Description" sortKey="description" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
-                <SortTh label="Category" sortKey="category" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
-                <SortTh label="Amount" sortKey="amount" currentKey={sortKey} dir={sortDir} onSort={handleSort} className="text-right" />
+                <SortTh
+                  label="Date"
+                  sortKey="date"
+                  currentKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Description"
+                  sortKey="description"
+                  currentKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Category"
+                  sortKey="category"
+                  currentKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Amount"
+                  sortKey="amount"
+                  currentKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                />
                 <th className="px-6 py-4 text-center">Type</th>
                 <th className="px-6 py-4 text-center">Actions</th>
               </tr>
@@ -430,18 +605,26 @@ export const Transactions = () => {
                 ))
               ) : error ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-red-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-8 text-center text-red-500"
+                  >
                     {(error as any).message || 'Failed to load transactions'}
                   </td>
                 </tr>
               ) : paginated.length === 0 ? (
-                <EmptyState filtersActive={hasActiveFilters} onClear={handleResetFilters} />
+                <EmptyState
+                  filtersActive={hasActiveFilters}
+                  onClear={handleResetFilters}
+                />
               ) : (
                 paginated.map((tx) => (
                   <tr
                     key={tx.id}
                     className={`hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors ${
-                      selectedTransactions.has(tx.id) ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
+                      selectedTransactions.has(tx.id)
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20'
+                        : ''
                     }`}
                   >
                     <td className="px-6 py-4 w-12">
@@ -463,16 +646,23 @@ export const Transactions = () => {
                         {tx.category}
                       </span>
                     </td>
-                    <td className={`px-6 py-4 text-right font-semibold tabular-nums ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-primary-light dark:text-white'}`}>
-                      {tx.type === 'income' ? '+' : ''}{formatAmount(tx.amount)}
+                    <td
+                      className={`px-6 py-4 text-right font-semibold tabular-nums ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-primary-light dark:text-white'}`}
+                    >
+                      {tx.type === 'income' ? '+' : ''}
+                      {formatAmount(tx.amount)}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        tx.type === 'expense'
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                      }`}>
-                        <span className="material-icons text-xs mr-1">{tx.type === 'income' ? 'north' : 'south'}</span>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          tx.type === 'expense'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                        }`}
+                      >
+                        <span className="material-icons text-xs mr-1">
+                          {tx.type === 'income' ? 'north' : 'south'}
+                        </span>
                         {tx.type[0].toUpperCase() + tx.type.slice(1)}
                       </span>
                     </td>
@@ -483,14 +673,18 @@ export const Transactions = () => {
                           className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                           onClick={() => handleEditClick(tx)}
                         >
-                          <span className="material-icons-outlined text-lg">edit</span>
+                          <span className="material-icons-outlined text-lg">
+                            edit
+                          </span>
                         </button>
                         <button
                           title="Delete"
                           className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                           onClick={() => handleDelete(tx.id)}
                         >
-                          <span className="material-icons-outlined text-lg">delete</span>
+                          <span className="material-icons-outlined text-lg">
+                            delete
+                          </span>
                         </button>
                       </div>
                     </td>
@@ -512,7 +706,9 @@ export const Transactions = () => {
         <AddTransactionModal
           isOpen={showAdd}
           onClose={() => setShowAdd(false)}
-          onCreate={async (input) => { await createTransaction(input); }}
+          onCreate={async (input) => {
+            await createTransaction(input);
+          }}
         />
       )}
       {showEdit && (
