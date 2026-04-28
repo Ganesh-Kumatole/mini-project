@@ -20,70 +20,70 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <NotificationsProvider>
-            <CurrencyProvider>
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/transactions"
-                  element={
-                    <ProtectedRoute>
-                      <Transactions />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/budgets"
-                  element={
-                    <ProtectedRoute>
-                      <Budgets />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/insights"
-                  element={
-                    <ProtectedRoute>
-                      <Insights />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/news"
-                  element={
-                    <ProtectedRoute>
-                      <NewsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute>
-                      <Settings />
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-              </BrowserRouter>
-            </CurrencyProvider>
-          </NotificationsProvider>
-        </ToastProvider>
-      </AuthProvider>
-    </ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <NotificationsProvider>
+              <CurrencyProvider>
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/transactions"
+                      element={
+                        <ProtectedRoute>
+                          <Transactions />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/budgets"
+                      element={
+                        <ProtectedRoute>
+                          <Budgets />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/insights"
+                      element={
+                        <ProtectedRoute>
+                          <Insights />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/news"
+                      element={
+                        <ProtectedRoute>
+                          <NewsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </BrowserRouter>
+              </CurrencyProvider>
+            </NotificationsProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
