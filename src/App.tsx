@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { NotificationsProvider } from './context/NotificationsContext';
-import { ToastProvider } from './context/ToastContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { CurrencyProvider } from './context/CurrencyContext';
+import {
+  AuthProvider,
+  CurrencyProvider,
+  ThemeProvider,
+  NotificationsProvider,
+  ToastProvider,
+} from './context';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { LandingPage } from './components/auth';
-import { LoginPage } from './components/auth';
-import { SignupPage } from './components/auth';
+import { HomePage } from './components/home';
+import { SignupPage, LoginPage } from './components/auth';
 import { Dashboard } from './components/dashboard';
 import { Transactions } from './components/transactions';
 import { Budgets } from './components/budgets';
@@ -26,7 +27,7 @@ function App() {
               <CurrencyProvider>
                 <BrowserRouter>
                   <Routes>
-                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route

@@ -1,3 +1,5 @@
 export * from './AuthContext';
-export * from './NotificationsContext'; // NEW
+export * from './NotificationsContext';
 export * from './ThemeContext';
+export * from './CurrencyContext';
+export * from './ToastContext';
