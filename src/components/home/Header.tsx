@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { User as FirebaseUser } from 'firebase/auth';
 import { useThemeContext } from '@/context/ThemeContext';
+import Icon from '@/components/common/Icon';
 
 const HeaderComponent = ({ user }: { user: FirebaseUser | null }) => {
   const { theme, toggleTheme } = useThemeContext();
@@ -13,9 +14,10 @@ const HeaderComponent = ({ user }: { user: FirebaseUser | null }) => {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="material-icons-outlined text-white text-base">
-                account_balance_wallet
-              </span>
+              <Icon
+                name="account_balance_wallet"
+                className="text-white text-base"
+              />
             </div>
             <span className="font-bold text-lg tracking-tight text-text-primary-light dark:text-text-primary-dark">
               Fintracker
@@ -29,11 +31,11 @@ const HeaderComponent = ({ user }: { user: FirebaseUser | null }) => {
               aria-label="Toggle theme"
               aria-pressed={isDark}
             >
-              <span className="material-icons-outlined text-xl">
-                {isDark ? 'light_mode' : 'dark_mode'}
-              </span>
+              <Icon
+                name={isDark ? 'light_mode' : 'dark_mode'}
+                className="text-xl"
+              />
             </button>
-            <div className="h-5 w-px bg-border-light dark:bg-border-dark" />
 
             {user ? (
               <Link
