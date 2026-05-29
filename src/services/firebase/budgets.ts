@@ -11,7 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from './config';
-import { Budget, CreateBudgetInput, UpdateBudgetInput } from '@/types';
+import { Budget, CreateBudgetInput, UpdateBudgetInput } from '@/pages/budgets/types';
 
 const getBudgetsCollection = (userId: string) => {
   return collection(db, 'users', userId, 'budgets');

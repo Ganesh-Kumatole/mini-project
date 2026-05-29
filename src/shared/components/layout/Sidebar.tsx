@@ -1,0 +1,86 @@
+import { NavLink, useNavigate } from 'react-router-dom';
+import { logoutUser } from '@/services/firebase/auth';
+import { SidebarProps } from '@/shared/types';
+
+const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
+  const navigate = useNavigate();
+
+  const menuItems = [
+    { icon: 'dashboard', label: 'Dashboard', path: '/dashboard' },
+    { icon: 'receipt_long', label: 'Transactions', path: '/transactions' },
+    { icon: 'savings', label: 'Budgets', path: '/budgets' },
+    { icon: 'lightbulb', label: 'Insights', path: '/insights' },
+    { icon: 'newspaper', label: 'News', path: '/news' },
+    { icon: 'settings', label: 'Settings', path: '/settings' },
+  ];
+
+  // logout handler
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      navigate('/');
+    } catch (e) {
+      console.error('Logout failed:', e);
+    }
+  };
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 md:hidden"
+          onClick={() => toggleSidebar(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`${
+          isOpen ? 'flex' : 'hidden'
+        } md:flex w-64 flex-col bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark h-full fixed md:relative z-30 transition-all`}
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center px-6 border-b border-border-light dark:border-border-dark">
+          <div className="flex items-center gap-2 text-primary font-bold text-xl">
+            <span className="material-icons-round text-3xl">
+              account_balance_wallet
+            </span>
+            <span>Fintracker</span>
+          </div>
+        </div>
+
+        {/* Page Links */}
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          {menuItems.map((item, index) => (
+            <NavLink
+              key={index}
+              to={item.path}
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive ? 'bg-primary/10 text-primary dark:bg-primary/20 border-l-2 border-primary' : 'text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary border-l-2 border-transparent'}`
+              }
+              onClick={() => window.innerWidth < 768 && toggleSidebar(false)}
+            >
+              <span className="material-icons-round text-xl">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Logout Link */}
+        <div className="p-4 border-t border-border-light dark:border-border-dark">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-danger hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          >
+            <span className="material-icons-round text-xl">logout</span>
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+};
+
+export { Sidebar };

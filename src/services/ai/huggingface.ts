@@ -1,4 +1,4 @@
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/shared/constants/categories';
 
 export interface FinancialStats {
   totalIncome: number;

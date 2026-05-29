@@ -16,7 +16,7 @@ import {
   Transaction,
   CreateTransactionInput,
   UpdateTransactionInput,
-} from '@/types';
+} from '@/pages/transactions/types';
 
 const getTransactionsCollection = (userId: string) => {
   return collection(db, 'users', userId, 'transactions');

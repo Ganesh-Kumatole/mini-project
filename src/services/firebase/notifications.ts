@@ -12,7 +12,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from './config';
-import { Notification, CreateNotificationInput } from '@/types';
+import { Notification, CreateNotificationInput } from '@/shared/types';
 
 const getNotificationsCollection = (userId: string) => {
   return collection(db, 'users', userId, 'notifications');

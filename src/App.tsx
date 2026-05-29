@@ -5,17 +5,17 @@ import {
   ThemeProvider,
   NotificationsProvider,
   ToastProvider,
-} from './context';
-import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { HomePage } from './components/home';
-import { SignupPage, LoginPage } from './components/auth';
-import { Dashboard } from './components/dashboard';
-import { Transactions } from './components/transactions';
-import { Budgets } from './components/budgets';
-import { Insights } from './components/insights';
-import { Settings } from './components/settings';
-import { NewsPage } from './components/news';
-import { ProtectedRoute } from './components/layout';
+} from '@/shared/context';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
+import { SignupPage, LoginPage } from '@/pages/auth';
+import { Dashboard } from '@/pages/dashboard';
+import { Transactions } from '@/pages/transactions';
+import { Budgets } from '@/pages/budgets';
+import { Insights } from '@/pages/insights';
+import { Settings } from '@/pages/settings';
+import { NewsPage } from '@/pages/news';
+import { ProtectedRoute } from '@/shared/components/layout';
+import { HomePage } from '@/pages/home';
 
 function App() {
   return (
